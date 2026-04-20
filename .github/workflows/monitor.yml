@@ -27,4 +27,6 @@ jobs:
           GITHUB_REPO_NAME: ai-cto
           OLLAMA_HOST: http://localhost:11434
           OLLAMA_MODEL: phi3
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python run_check.py
