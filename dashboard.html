@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI CTO Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; padding: 24px; }
+    h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+    .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .site-name { font-size: 16px; font-weight: 500; }
+    .site-url { font-size: 12px; color: #888; margin-bottom: 16px; }
+    .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .badge.up { background: #0d2e1a; color: #4ade80; }
+    .badge.down { background: #2e0d0d; color: #f87171; }
+    .badge.unknown { background: #2a2a2a; color: #888; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat { background: #111; border-radius: 8px; padding: 10px 12px; }
+    .stat-val { font-size: 20px; font-weight: 600; }
+    .stat-lbl { font-size: 11px; color: #888; margin-top: 2px; }
+    .uptime-good { color: #4ade80; }
+    .uptime-bad { color: #f87171; }
+    .section-title { font-size: 16px; font-weight: 500; margin-bottom: 16px; color: #ccc; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 12px; color: #888; font-weight: 500; border-bottom: 1px solid #2a2a2a; }
+    td { padding: 10px 12px; border-bottom: 1px solid #1a1a1a; color: #ccc; }
+    tr:last-child td { border-bottom: none; }
+    .log-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .loading { color: #888; font-size: 14px; text-align: center; padding: 40px; }
+    .refresh-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; float: right; }
+    .refresh-btn:hover { background: #2a2a2a; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .dot.up { background: #4ade80; }
+    .dot.down { background: #f87171; }
+  </style>
+</head>
+<body>
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px;">
+  <div>
+    <h1>🤖 AI CTO Dashboard</h1>
+    <div class="subtitle" id="last-updated">Loading...</div>
+  </div>
+  <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+</div>
+
+<div id="sites-grid" class="grid">
+  <div class="loading">Loading sites...</div>
+</div>
+
+<div class="log-card">
+  <div class="section-title">📋 Recent Uptime Logs</div>
+  <div id="uptime-table"><div class="loading">Loading logs...</div></div>
+</div>
+
+<div class="log-card">
+  <div class="section-title">🔧 Fix History</div>
+  <div id="fix-table"><div class="loading">Loading fix logs...</div></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`
+  };
+
+  async function fetchSites() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?active=eq.true`, { headers });
+    return res.json();
+  }
+
+  async function fetchUptimeLogs() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=20`, { headers });
+    return res.json();
+  }
+
+  async function fetchFixLogs() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/fix_logs?order=created_at.desc&limit=10`, { headers });
+    return res.json();
+  }
+
+  async function fetchStats(siteUrl) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=100`, { headers });
+    const logs = await res.json();
+    if (!logs.length) return { uptime: 100, total: 0, avg: 0, status: "unknown" };
+    const total = logs.length;
+    const up = logs.filter(l => l.status === "up").length;
+    const times = logs.filter(l => l.response_time).map(l => l.response_time);
+    const avg = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0;
+    return {
+      uptime: Math.round((up / total) * 100),
+      total,
+      avg,
+      status: logs[0]?.status || "unknown"
+    };
+  }
+
+  async function loadSites() {
+    const sites = await fetchSites();
+    const grid = document.getElementById("sites-grid");
+    if (!sites.length) {
+      grid.innerHTML = '<div class="loading">No sites yet. Add one via Telegram!</div>';
+      return;
+    }
+    grid.innerHTML = "";
+    for (const site of sites) {
+      const stats = await fetchStats(site.url);
+      const uptimeClass = stats.uptime >= 90 ? "uptime-good" : "uptime-bad";
+      grid.innerHTML += `
+        <div class="card">
+          <div class="card-header">
+            <div class="site-name"><span class="dot ${stats.status}"></span>${site.name}</div>
+            <span class="badge ${stats.status}">${stats.status.toUpperCase()}</span>
+          </div>
+          <div class="site-url">${site.url}</div>
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-val ${uptimeClass}">${stats.uptime}%</div>
+              <div class="stat-lbl">Uptime</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val">${stats.avg}ms</div>
+              <div class="stat-lbl">Avg Response</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val">${stats.total}</div>
+              <div class="stat-lbl">Total Checks</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val" style="font-size:13px; color:#888;">${new Date(site.created_at).toLocaleDateString()}</div>
+              <div class="stat-lbl">Added</div>
+            </div>
+          </div>
+        </div>`;
+    }
+  }
+
+  async function loadUptimeLogs() {
+    const logs = await fetchUptimeLogs();
+    const el = document.getElementById("uptime-table");
+    if (!logs.length) { el.innerHTML = '<div class="loading">No logs yet.</div>'; return; }
+    el.innerHTML = `<table>
+      <tr><th>Site</th><th>Status</th><th>Response</th><th>Time</th></tr>
+      ${logs.map(l => `<tr>
+        <td>${l.site_url}</td>
+        <td><span class="badge ${l.status}">${l.status.toUpperCase()}</span></td>
+        <td>${l.response_time ? l.response_time + "ms" : "—"}</td>
+        <td>${new Date(l.checked_at).toLocaleString()}</td>
+      </tr>`).join("")}
+    </table>`;
+  }
+
+  async function loadFixLogs() {
+    const logs = await fetchFixLogs();
+    const el = document.getElementById("fix-table");
+    if (!logs.length) { el.innerHTML = '<div class="loading">No fixes yet.</div>'; return; }
+    el.innerHTML = `<table>
+      <tr><th>Site</th><th>Error</th><th>Fix</th><th>Deployed</th><th>Time</th></tr>
+      ${logs.map(l => `<tr>
+        <td>${l.site_url}</td>
+        <td style="color:#f87171;">${l.error || "—"}</td>
+        <td style="color:#4ade80;">${l.fix || "—"}</td>
+        <td>${l.deployed ? "✅" : "⏳"}</td>
+        <td>${new Date(l.created_at).toLocaleString()}</td>
+      </tr>`).join("")}
+    </table>`;
+  }
+
+  async function loadAll() {
+    document.getElementById("last-updated").textContent = "Refreshing...";
+    await Promise.all([loadSites(), loadUptimeLogs(), loadFixLogs()]);
+    document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString();
+  }
+
+  loadAll();
+  setInterval(loadAll, 30000);
+</script>
+</body>
+</html>
