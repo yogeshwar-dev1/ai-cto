@@ -22,28 +22,25 @@ def get_all_sites() -> list:
         print(f"DB error (get_sites): {e}")
         return []
 
-def add_site(url: str, name: str = "") -> bool:
+def add_site(url, name=None):
     try:
-        payload = {"url": url, "name": name or url, "active": True}
-        res = requests.post(f"{SUPABASE_URL}/rest/v1/sites", json=payload, headers=HEADERS, timeout=10)
-        return res.status_code in [200, 201]
-    except Exception as e:
-        print(f"DB error (add_site): {e}")
-        return False
-
-def remove_site(url: str) -> bool:
-    try:
-        res = requests.patch(
+        existing = requests.get(
             f"{SUPABASE_URL}/rest/v1/sites?url=eq.{url}",
-            json={"active": False},
             headers=HEADERS,
             timeout=10
         )
-        return res.status_code in [200, 204]
+        if existing.json():
+            return False, "Site already exists"
+        res = requests.post(
+            f"{SUPABASE_URL}/rest/v1/sites",
+            json={"url": url, "name": name or url, "active": True},
+            headers=HEADERS,
+            timeout=10
+        )
+        return res.status_code in [200, 201], None
     except Exception as e:
-        print(f"DB error (remove_site): {e}")
-        return False
-
+        print(f"DB error (add_site): {e}")
+        return False, str(e)
 def log_uptime(site_url: str, status: str, response_time: int = None, error: str = None) -> bool:
     try:
         payload = {
