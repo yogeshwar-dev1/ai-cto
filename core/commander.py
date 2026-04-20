@@ -19,7 +19,6 @@ def handle_command(text: str) -> bool:
         for site in sites:
             result = check_site(site["url"])
             stats = get_uptime_stats(site["url"])
-            now = datetime.now().strftime("%H:%M:%S")
             if result["status"] == "up":
                 msg += f"🟢 *{site['name']}*\n⚡ {result['response_time']}ms | 📈 {stats['uptime']}% uptime\n🌐 `{site['url']}`\n\n"
             else:
@@ -51,11 +50,12 @@ def handle_command(text: str) -> bool:
             url = "https://" + url
         send_message(f"➕ Adding site: `{url}`...")
         result = check_site(url)
-        if add_site(url, url):
-            status = f"✅ Up ({result['response_time']}ms)" if result["status"] == "up" else f"❌ Down"
+        success, error = add_site(url, url)
+        if success:
+            status = f"✅ Up ({result['response_time']}ms)" if result["status"] == "up" else "❌ Down"
             send_message(f"✅ Site added!\n🌐 `{url}`\nCurrent status: {status}")
         else:
-            send_message(f"❌ Failed to add site (might already exist)")
+            send_message(f"❌ Failed to add site: {error}")
         return True
 
     elif cmd.startswith("removesite ") or cmd.startswith("/removesite "):
@@ -87,15 +87,3 @@ def handle_command(text: str) -> bool:
     elif cmd.startswith("build ") or cmd.startswith("/build "):
         description = cmd.replace("/build ", "").replace("build ", "")
         send_message(f"🏗️ Building: *{description}*\nThis may take a minute...")
-        build_feature(description, os.path.join(os.getcwd(), "index.html"))
-        full_deploy(f"Built: {description}")
-        return True
-
-    elif cmd.startswith("ask ") or cmd.startswith("/ask "):
-        question = cmd.replace("/ask ", "").replace("ask ", "")
-        send_message(f"🧠 Thinking about: *{question}*")
-        answer = ask(question)
-        send_message(f"💡 *Answer:*\n{answer[:1000]}")
-        return True
-
-    return False

@@ -37,10 +37,27 @@ def add_site(url, name=None):
             headers=HEADERS,
             timeout=10
         )
-        return res.status_code in [200, 201], None
+        print(f"Supabase response: {res.status_code} — {res.text}")
+        if res.status_code in [200, 201]:
+            return True, None
+        else:
+            return False, res.text
     except Exception as e:
         print(f"DB error (add_site): {e}")
         return False, str(e)
+def remove_site(url: str) -> bool:
+    try:
+        res = requests.patch(
+            f"{SUPABASE_URL}/rest/v1/sites?url=eq.{url}",
+            json={"active": False},
+            headers=HEADERS,
+            timeout=10
+        )
+        return res.status_code in [200, 204]
+    except Exception as e:
+        print(f"DB error (remove_site): {e}")
+        return False
+
 def log_uptime(site_url: str, status: str, response_time: int = None, error: str = None) -> bool:
     try:
         payload = {
