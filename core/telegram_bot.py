@@ -24,7 +24,7 @@ def send_approval_request(message: str, approve_data: str, reject_data: str) -> 
         "reply_markup": {
             "inline_keyboard": [[
                 {"text": "✅ Approve", "callback_data": approve_data},
-                {"text": "❌ Reject",  "callback_data": reject_data}
+                {"text": "❌ Reject", "callback_data": reject_data}
             ]]
         }
     }
