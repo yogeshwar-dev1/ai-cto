@@ -8,7 +8,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: #f9fafb; color: #111; padding: 40px 24px; max-width: 720px; margin: 0 auto; }
     h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-    .subtitle { color: #666; font-size: 14px; margin-bottom: 8px; }
+    .subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
     .overall { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; margin-bottom: 32px; }
     .overall-dot { width: 14px; height: 14px; border-radius: 50%; }
     .overall-text { font-size: 16px; font-weight: 600; }
@@ -19,8 +19,10 @@
     .site-url { font-size: 12px; color: #888; }
     .site-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
     .badge { font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
-    .badge.up { background: #dcfce7; color: #16a34a; }
-    .badge.down { background: #fee2e2; color: #dc2626; }
+    .badge.up, .badge.operational { background: #dcfce7; color: #16a34a; }
+    .badge.down, .badge.outage { background: #fee2e2; color: #dc2626; }
+    .badge.investigating { background: #fef9c3; color: #ca8a04; }
+    .badge.resolved { background: #dcfce7; color: #16a34a; }
     .badge.unknown { background: #f3f4f6; color: #888; }
     .uptime-text { font-size: 12px; color: #888; }
     .bar-wrap { display: flex; gap: 2px; margin-top: 8px; }
@@ -28,9 +30,15 @@
     .bar.up { background: #4ade80; }
     .bar.down { background: #f87171; }
     .bar.unknown { background: #e5e7eb; }
+    .incident-card { background: #fff; border: 1px solid #e5e7eb; border-left: 4px solid #f87171; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
+    .incident-card.resolved { border-left-color: #4ade80; }
+    .incident-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+    .incident-desc { font-size: 13px; color: #666; margin-bottom: 8px; }
+    .incident-meta { font-size: 12px; color: #aaa; display: flex; gap: 16px; }
     .footer { text-align: center; color: #aaa; font-size: 12px; margin-top: 40px; }
     .green { color: #16a34a; }
     .red { color: #dc2626; }
+    .mb32 { margin-bottom: 32px; }
   </style>
 </head>
 <body>
@@ -44,7 +52,10 @@
 </div>
 
 <div class="section-title">Services</div>
-<div id="sites-list"></div>
+<div id="sites-list" class="mb32"></div>
+
+<div class="section-title">Incident History</div>
+<div id="incidents-list"></div>
 
 <div class="footer">
   Last updated: <span id="footer-time">—</span> · Refreshes every 60 seconds
@@ -77,15 +88,15 @@
     };
   }
 
+  async function fetchIncidents() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/incidents?order=created_at.desc&limit=10`, { headers });
+    return res.json();
+  }
+
   async function loadStatus() {
     const sites = await fetchSites();
     const list = document.getElementById("sites-list");
     list.innerHTML = "";
-
-    if (!sites.length) {
-      list.innerHTML = '<div class="site-row">No sites being monitored yet.</div>';
-      return;
-    }
 
     let allUp = true;
     let anyDown = false;
@@ -115,15 +126,34 @@
 
     const dot = document.getElementById("overall-dot");
     const text = document.getElementById("overall-text");
-    if (allUp) {
-      dot.style.background = "#4ade80";
-      text.innerHTML = '<span class="green">All Systems Operational</span>';
-    } else if (anyDown) {
+    if (anyDown) {
       dot.style.background = "#f87171";
       text.innerHTML = '<span class="red">Some Systems Are Down</span>';
+    } else if (allUp) {
+      dot.style.background = "#4ade80";
+      text.innerHTML = '<span class="green">All Systems Operational</span>';
     } else {
       dot.style.background = "#facc15";
       text.innerHTML = "Checking systems...";
+    }
+
+    const incidents = await fetchIncidents();
+    const ilist = document.getElementById("incidents-list");
+    if (!incidents.length) {
+      ilist.innerHTML = '<div class="site-row" style="color:#888;">No incidents recorded. 🎉</div>';
+    } else {
+      ilist.innerHTML = incidents.map(i => `
+        <div class="incident-card ${i.status === 'resolved' ? 'resolved' : ''}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div class="incident-title">${i.title}</div>
+            <span class="badge ${i.status}">${i.status}</span>
+          </div>
+          <div class="incident-desc">${i.description || "No details provided"}</div>
+          <div class="incident-meta">
+            <span>🕐 Started: ${new Date(i.started_at).toLocaleString()}</span>
+            ${i.resolved_at ? `<span>✅ Resolved: ${new Date(i.resolved_at).toLocaleString()}</span>` : ""}
+          </div>
+        </div>`).join("");
     }
 
     const now = new Date().toLocaleTimeString();
