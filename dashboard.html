@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI CTO Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; padding: 24px; }
@@ -178,9 +179,39 @@
     await Promise.all([loadSites(), loadUptimeLogs(), loadFixLogs()]);
     document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString();
   }
-
+async function loadChart() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=30`, { headers });
+  const logs = await res.json();
+  const labels = logs.map(l => new Date(l.checked_at).toLocaleTimeString());
+  const data = logs.map(l => l.response_time || 0);
+  new Chart(document.getElementById("responseChart"), {
+    type: "line",
+    data: {
+      labels: labels.reverse(),
+      datasets: [{
+        label: "Response Time (ms)",
+        data: data.reverse(),
+        borderColor: "#4ade80",
+        backgroundColor: "rgba(74,222,128,0.1)",
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      plugins: { legend: { labels: { color: "#fff" } } },
+      scales: {
+        x: { ticks: { color: "#888" }, grid: { color: "#2a2a2a" } },
+        y: { ticks: { color: "#888" }, grid: { color: "#2a2a2a" } }
+      }
+    }
+  });
+}
   loadAll();
   setInterval(loadAll, 30000);
 </script>
+<div class="log-card">
+  <div class="section-title">📈 Response Time Graph</div>
+  <canvas id="responseChart" height="100"></canvas>
+</div>
 </body>
 </html>
