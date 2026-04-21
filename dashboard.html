@@ -182,26 +182,31 @@
 async function loadChart() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=30`, { headers });
   const logs = await res.json();
-  const labels = logs.map(l => new Date(l.checked_at).toLocaleTimeString());
-  const data = logs.map(l => l.response_time || 0);
-  new Chart(document.getElementById("responseChart"), {
+  if (!logs.length) return;
+  const filtered = logs.filter(l => l.response_time > 0);
+  const labels = filtered.map(l => new Date(l.checked_at).toLocaleTimeString()).reverse();
+  const data = filtered.map(l => l.response_time).reverse();
+  const ctx = document.getElementById("responseChart").getContext("2d");
+  new Chart(ctx, {
     type: "line",
     data: {
-      labels: labels.reverse(),
+      labels: labels,
       datasets: [{
         label: "Response Time (ms)",
-        data: data.reverse(),
+        data: data,
         borderColor: "#4ade80",
         backgroundColor: "rgba(74,222,128,0.1)",
         tension: 0.4,
-        fill: true
+        fill: true,
+        pointRadius: 3
       }]
     },
     options: {
+      responsive: true,
       plugins: { legend: { labels: { color: "#fff" } } },
       scales: {
-        x: { ticks: { color: "#888" }, grid: { color: "#2a2a2a" } },
-        y: { ticks: { color: "#888" }, grid: { color: "#2a2a2a" } }
+        x: { ticks: { color: "#888", maxTicksLimit: 8 }, grid: { color: "#2a2a2a" } },
+        y: { ticks: { color: "#888" }, grid: { color: "#2a2a2a" }, beginAtZero: true }
       }
     }
   });
