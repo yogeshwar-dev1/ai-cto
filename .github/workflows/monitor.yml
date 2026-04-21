@@ -2,31 +2,44 @@ name: AI CTO Monitor
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # every 5 minutes
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install requests python-dotenv python-telegram-bot==20.7 GitPython groq
-      - name: Run monitor check
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GROQ_MODEL: llama-3.1-8b-instant
-          SITE_URL: ${{ secrets.SITE_URL }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_USERNAME: yogeshwar-dev1
-          GITHUB_REPO_NAME: ai-cto
-          OLLAMA_HOST: http://localhost:11434
-          OLLAMA_MODEL: phi3
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: python run_check.py
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run monitor
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        SITE_URL: ${{ secrets.SITE_URL }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GROQ_MODEL: ${{ secrets.GROQ_MODEL }}
+        ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+        ALERT_EMAIL_PASSWORD: ${{ secrets.ALERT_EMAIL_PASSWORD }}
+      run: python run_check.py
+
+    - name: Run AI predictions
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GROQ_MODEL: ${{ secrets.GROQ_MODEL }}
+      run: python predict.py
