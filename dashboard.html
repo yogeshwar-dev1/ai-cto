@@ -70,4 +70,162 @@
 
 <script>
   const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIs
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`
+  };
+
+  async function fetchSites() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?active=eq.true`, { headers });
+    return res.json();
+  }
+
+  async function fetchUptimeLogs() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=20`, { headers });
+    return res.json();
+  }
+
+  async function fetchFixLogs() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/fix_logs?order=created_at.desc&limit=10`, { headers });
+    return res.json();
+  }
+
+  async function fetchStats(siteUrl) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=100`, { headers });
+    const logs = await res.json();
+    if (!logs.length) return { uptime: 100, total: 0, avg: 0, status: "unknown" };
+    const total = logs.length;
+    const up = logs.filter(l => l.status === "up").length;
+    const times = logs.filter(l => l.response_time).map(l => l.response_time);
+    const avg = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0;
+    return {
+      uptime: Math.round((up / total) * 100),
+      total,
+      avg,
+      status: logs[0]?.status || "unknown"
+    };
+  }
+
+  async function loadSites() {
+    const sites = await fetchSites();
+    const grid = document.getElementById("sites-grid");
+    if (!sites.length) {
+      grid.innerHTML = '<div class="loading">No sites yet. Add one via Telegram!</div>';
+      return;
+    }
+    grid.innerHTML = "";
+    for (const site of sites) {
+      const stats = await fetchStats(site.url);
+      const uptimeClass = stats.uptime >= 90 ? "uptime-good" : "uptime-bad";
+      grid.innerHTML += `
+        <div class="card">
+          <div class="card-header">
+            <div class="site-name"><span class="dot ${stats.status}"></span>${site.name}</div>
+            <span class="badge ${stats.status}">${stats.status.toUpperCase()}</span>
+          </div>
+          <div class="site-url">${site.url}</div>
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-val ${uptimeClass}">${stats.uptime}%</div>
+              <div class="stat-lbl">Uptime</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val">${stats.avg}ms</div>
+              <div class="stat-lbl">Avg Response</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val">${stats.total}</div>
+              <div class="stat-lbl">Total Checks</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val" style="font-size:13px; color:#888;">${new Date(site.created_at).toLocaleDateString()}</div>
+              <div class="stat-lbl">Added</div>
+            </div>
+          </div>
+        </div>`;
+    }
+  }
+
+  async function loadUptimeLogs() {
+    const logs = await fetchUptimeLogs();
+    const el = document.getElementById("uptime-table");
+    if (!logs.length) { el.innerHTML = '<div class="loading">No logs yet.</div>'; return; }
+    el.innerHTML = `<table>
+      <tr><th>Site</th><th>Status</th><th>Response</th><th>Time</th></tr>
+      ${logs.map(l => `<tr>
+        <td>${l.site_url}</td>
+        <td><span class="badge ${l.status}">${l.status.toUpperCase()}</span></td>
+        <td>${l.response_time ? l.response_time + "ms" : "—"}</td>
+        <td>${new Date(l.checked_at).toLocaleString()}</td>
+      </tr>`).join("")}
+    </table>`;
+  }
+
+  async function loadFixLogs() {
+    const logs = await fetchFixLogs();
+    const el = document.getElementById("fix-table");
+    if (!logs.length) { el.innerHTML = '<div class="loading">No fixes yet.</div>'; return; }
+    el.innerHTML = `<table>
+      <tr><th>Site</th><th>Error</th><th>Fix</th><th>Deployed</th><th>Time</th></tr>
+      ${logs.map(l => `<tr>
+        <td>${l.site_url}</td>
+        <td style="color:#f87171;">${l.error || "—"}</td>
+        <td style="color:#4ade80;">${l.fix || "—"}</td>
+        <td>${l.deployed ? "✅" : "⏳"}</td>
+        <td>${new Date(l.created_at).toLocaleString()}</td>
+      </tr>`).join("")}
+    </table>`;
+  }
+
+  let chartInstance = null;
+
+  async function loadChart() {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=30`, { headers });
+      const logs = await res.json();
+      if (!Array.isArray(logs) || !logs.length) return;
+      const filtered = logs.filter(l => l.response_time > 0).reverse();
+      if (!filtered.length) return;
+      const labels = filtered.map(l => new Date(l.checked_at).toLocaleTimeString());
+      const data = filtered.map(l => l.response_time);
+      const ctx = document.getElementById("responseChart").getContext("2d");
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "Response Time (ms)",
+            data,
+            borderColor: "#4ade80",
+            backgroundColor: "rgba(74,222,128,0.1)",
+            tension: 0.4,
+            fill: true,
+            pointRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "#fff" } } },
+          scales: {
+            x: { ticks: { color: "#888", maxTicksLimit: 8 }, grid: { color: "#2a2a2a" } },
+            y: { ticks: { color: "#888" }, grid: { color: "#2a2a2a" }, beginAtZero: true }
+          }
+        }
+      });
+    } catch(e) { console.error("Chart error:", e); }
+  }
+
+  async function loadAll() {
+    document.getElementById("last-updated").textContent = "Refreshing...";
+    await Promise.all([loadSites(), loadUptimeLogs(), loadFixLogs(), loadChart()]);
+    document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString();
+  }
+
+  loadAll();
+  setInterval(loadAll, 30000);
+</script>
+</body>
+</html>
