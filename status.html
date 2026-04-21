@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Status</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f9fafb; color: #111; padding: 40px 24px; max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #666; font-size: 14px; margin-bottom: 8px; }
+    .overall { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; margin-bottom: 32px; }
+    .overall-dot { width: 14px; height: 14px; border-radius: 50%; }
+    .overall-text { font-size: 16px; font-weight: 600; }
+    .section-title { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+    .site-row { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .site-info { display: flex; flex-direction: column; gap: 3px; }
+    .site-name { font-weight: 600; font-size: 15px; }
+    .site-url { font-size: 12px; color: #888; }
+    .site-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .badge { font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+    .badge.up { background: #dcfce7; color: #16a34a; }
+    .badge.down { background: #fee2e2; color: #dc2626; }
+    .badge.unknown { background: #f3f4f6; color: #888; }
+    .uptime-text { font-size: 12px; color: #888; }
+    .bar-wrap { display: flex; gap: 2px; margin-top: 8px; }
+    .bar { width: 8px; height: 28px; border-radius: 3px; }
+    .bar.up { background: #4ade80; }
+    .bar.down { background: #f87171; }
+    .bar.unknown { background: #e5e7eb; }
+    .footer { text-align: center; color: #aaa; font-size: 12px; margin-top: 40px; }
+    .green { color: #16a34a; }
+    .red { color: #dc2626; }
+  </style>
+</head>
+<body>
+
+<h1>⚡ System Status</h1>
+<div class="subtitle" id="last-updated">Checking systems...</div>
+
+<div class="overall" id="overall-status">
+  <div class="overall-dot" id="overall-dot" style="background:#e5e7eb;"></div>
+  <div class="overall-text" id="overall-text">Checking all systems...</div>
+</div>
+
+<div class="section-title">Services</div>
+<div id="sites-list"></div>
+
+<div class="footer">
+  Last updated: <span id="footer-time">—</span> · Refreshes every 60 seconds
+</div>
+
+<script>
+  const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`
+  };
+
+  async function fetchSites() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?active=eq.true`, { headers });
+    return res.json();
+  }
+
+  async function fetchStats(siteUrl) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=30`, { headers });
+    const logs = await res.json();
+    if (!logs.length) return { uptime: 100, status: "unknown", history: [] };
+    const total = logs.length;
+    const up = logs.filter(l => l.status === "up").length;
+    return {
+      uptime: Math.round((up / total) * 100),
+      status: logs[0]?.status || "unknown",
+      history: logs.slice(0, 30).reverse()
+    };
+  }
+
+  async function loadStatus() {
+    const sites = await fetchSites();
+    const list = document.getElementById("sites-list");
+    list.innerHTML = "";
+
+    if (!sites.length) {
+      list.innerHTML = '<div class="site-row">No sites being monitored yet.</div>';
+      return;
+    }
+
+    let allUp = true;
+    let anyDown = false;
+
+    for (const site of sites) {
+      const stats = await fetchStats(site.url);
+      if (stats.status === "down") { allUp = false; anyDown = true; }
+      if (stats.status === "unknown") allUp = false;
+
+      const bars = stats.history.map(l =>
+        `<div class="bar ${l.status}" title="${new Date(l.checked_at).toLocaleString()}: ${l.status}"></div>`
+      ).join("");
+
+      list.innerHTML += `
+        <div class="site-row">
+          <div class="site-info">
+            <div class="site-name">${site.name}</div>
+            <div class="site-url">${site.url}</div>
+            <div class="bar-wrap">${bars || '<div style="color:#aaa;font-size:12px;">No history yet</div>'}</div>
+          </div>
+          <div class="site-right">
+            <span class="badge ${stats.status}">${stats.status === "up" ? "Operational" : stats.status === "down" ? "Outage" : "Unknown"}</span>
+            <div class="uptime-text">${stats.uptime}% uptime</div>
+          </div>
+        </div>`;
+    }
+
+    const dot = document.getElementById("overall-dot");
+    const text = document.getElementById("overall-text");
+    if (allUp) {
+      dot.style.background = "#4ade80";
+      text.innerHTML = '<span class="green">All Systems Operational</span>';
+    } else if (anyDown) {
+      dot.style.background = "#f87171";
+      text.innerHTML = '<span class="red">Some Systems Are Down</span>';
+    } else {
+      dot.style.background = "#facc15";
+      text.innerHTML = "Checking systems...";
+    }
+
+    const now = new Date().toLocaleTimeString();
+    document.getElementById("last-updated").textContent = "Last checked: " + now;
+    document.getElementById("footer-time").textContent = now;
+  }
+
+  loadStatus();
+  setInterval(loadStatus, 60000);
+</script>
+</body>
+</html>
