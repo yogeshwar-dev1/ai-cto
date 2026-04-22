@@ -32,11 +32,14 @@
     tr:last-child td { border-bottom: none; }
     .log-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
     .loading { color: #888; font-size: 14px; text-align: center; padding: 40px; }
-    .refresh-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; float: right; }
+    .refresh-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
     .refresh-btn:hover { background: #2a2a2a; }
+    .logout-btn { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-left: 8px; }
+    .logout-btn:hover { background: #3e1a1a; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .dot.up { background: #4ade80; }
     .dot.down { background: #f87171; }
+    .welcome { color: #4ade80; font-size: 13px; margin-right: 8px; }
   </style>
 </head>
 <body>
@@ -46,7 +49,11 @@
     <h1>🤖 AI CTO Dashboard</h1>
     <div class="subtitle" id="last-updated">Loading...</div>
   </div>
-  <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+  <div style="display:flex; align-items:center;">
+    <span class="welcome" id="welcome-msg"></span>
+    <button class="refresh-btn" id="refresh-btn">↻ Refresh</button>
+    <button class="logout-btn" id="logout-btn">Logout</button>
+  </div>
 </div>
 
 <div id="sites-grid" class="grid">
@@ -69,6 +76,16 @@
 </div>
 
 <script>
+  const user = JSON.parse(localStorage.getItem("aicto_user"));
+  if (!user) window.location.href = "auth.html";
+
+  document.getElementById("welcome-msg").textContent = user ? `Hi, ${user.name}!` : "";
+
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    localStorage.removeItem("aicto_user");
+    window.location.href = "auth.html";
+  });
+
   const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
 
@@ -224,6 +241,7 @@
     document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString();
   }
 
+  document.getElementById("refresh-btn").addEventListener("click", loadAll);
   loadAll();
   setInterval(loadAll, 30000);
 </script>
