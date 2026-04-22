@@ -40,6 +40,7 @@
     .dot.up { background: #4ade80; }
     .dot.down { background: #f87171; }
     .welcome { color: #4ade80; font-size: 13px; margin-right: 8px; }
+    .debug { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px; font-size: 11px; color: #888; word-break: break-all; margin-bottom: 16px; display: none; }
   </style>
 </head>
 <body>
@@ -55,6 +56,8 @@
     <button class="logout-btn" id="logout-btn">Logout</button>
   </div>
 </div>
+
+<div class="debug" id="debug-box"></div>
 
 <div id="sites-grid" class="grid">
   <div class="loading">Loading sites...</div>
@@ -86,8 +89,14 @@
 
   let currentUser = null;
 
+  function showDebug(msg) {
+    const el = document.getElementById("debug-box");
+    el.style.display = "block";
+    el.textContent = msg;
+  }
+
   async function initUser() {
-    // Check existing local session
+    // 1. Check existing local session first
     const localUser = JSON.parse(localStorage.getItem("aicto_user"));
     if (localUser) {
       currentUser = localUser;
@@ -95,41 +104,66 @@
       return true;
     }
 
-    // Check for Google OAuth token in URL hash
+    // 2. Debug: show full URL so we know what Supabase sent back
+    const fullURL = window.location.href;
+    showDebug("URL: " + fullURL);
+
+    // 3. Try hash fragment first (#access_token=...)
+    let accessToken = null;
     const hash = window.location.hash;
     if (hash && hash.includes("access_token")) {
       const params = new URLSearchParams(hash.slice(1));
-      const accessToken = params.get("access_token");
-      if (accessToken) {
-        try {
-          const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-            headers: {
-              "apikey": SUPABASE_KEY,
-              "Authorization": `Bearer ${accessToken}`
-            }
-          });
-          const data = await res.json();
-          if (data && data.email) {
-            currentUser = {
-              name: data.user_metadata?.full_name || data.user_metadata?.name || data.email.split("@")[0],
-              email: data.email,
-              plan: "free",
-              id: data.id
-            };
-            localStorage.setItem("aicto_user", JSON.stringify(currentUser));
-            // Clean hash from URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-            document.getElementById("welcome-msg").textContent = `Hi, ${currentUser.name}!`;
-            return true;
-          }
-        } catch(e) {
-          console.error("OAuth session error:", e);
-        }
+      accessToken = params.get("access_token");
+      showDebug("Found token in hash: " + accessToken?.slice(0, 30) + "...");
+    }
+
+    // 4. Try query string (?access_token=...)
+    if (!accessToken) {
+      const query = window.location.search;
+      if (query && query.includes("access_token")) {
+        const params = new URLSearchParams(query.slice(1));
+        accessToken = params.get("access_token");
+        showDebug("Found token in query: " + accessToken?.slice(0, 30) + "...");
       }
     }
 
-    // No session found
-    window.location.href = "auth.html";
+    // 5. If we have a token, fetch user info from Supabase
+    if (accessToken) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${accessToken}`
+          }
+        });
+        const data = await res.json();
+        showDebug("Supabase user response: " + JSON.stringify(data).slice(0, 200));
+
+        if (data && data.email) {
+          currentUser = {
+            name: data.user_metadata?.full_name || data.user_metadata?.name || data.email.split("@")[0],
+            email: data.email,
+            plan: "free",
+            id: data.id
+          };
+          localStorage.setItem("aicto_user", JSON.stringify(currentUser));
+          window.history.replaceState({}, document.title, window.location.pathname);
+          document.getElementById("welcome-msg").textContent = `Hi, ${currentUser.name}!`;
+          document.getElementById("debug-box").style.display = "none";
+          return true;
+        } else {
+          showDebug("No email in response. Full: " + JSON.stringify(data));
+        }
+      } catch(e) {
+        showDebug("Fetch error: " + e.message);
+      }
+    }
+
+    // 6. No session found — show debug for 5 seconds then redirect
+    if (!accessToken) {
+      showDebug("No token found in URL. Hash: " + hash + " | Query: " + window.location.search);
+    }
+    setTimeout(() => { window.location.href = "auth.html"; }, 5000);
     return false;
   }
 
@@ -287,7 +321,6 @@
 
   document.getElementById("refresh-btn").addEventListener("click", loadAll);
 
-  // Init: check user first, then load data
   initUser().then(ok => {
     if (ok) {
       loadAll();
