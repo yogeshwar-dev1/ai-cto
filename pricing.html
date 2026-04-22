@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI CTO — Pricing</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; padding: 40px 24px; }
@@ -148,12 +149,63 @@
     renderPlans();
   });
 
-  function selectPlan(plan) {
-    if (plan === "Free") {
+  const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+
+  async function updateUserPlan(userId, plan) {
+    await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${userId}`, {
+      method: "PATCH",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ plan })
+    });
+  }
+
+  function selectPlan(planName) {
+    if (planName === "Free") {
       window.location.href = "auth.html";
-    } else {
-      alert(`Payment coming soon! You selected: ${plan}\n\nWe will integrate Razorpay next.`);
+      return;
     }
+
+    const user = JSON.parse(localStorage.getItem("aicto_user"));
+    if (!user) {
+      window.location.href = "auth.html";
+      return;
+    }
+
+    const prices = {
+      Starter: { monthly: 49900, yearly: 499900 },
+      Pro: { monthly: 149900, yearly: 1499900 },
+      Business: { monthly: 399900, yearly: 3999900 }
+    };
+
+    const amount = prices[planName][isYearly ? "yearly" : "monthly"];
+
+    const options = {
+      key: "rzp_live_SgVSH5uxw9lGWn",
+      amount: amount,
+      currency: "INR",
+      name: "AI CTO",
+      description: `${planName} Plan — ${isYearly ? "Yearly" : "Monthly"}`,
+      handler: async function(response) {
+        await updateUserPlan(user.id, planName.toLowerCase());
+        const updated = { ...user, plan: planName.toLowerCase() };
+        localStorage.setItem("aicto_user", JSON.stringify(updated));
+        alert(`✅ Payment successful!\nPayment ID: ${response.razorpay_payment_id}\n\nYour plan is now: ${planName}!`);
+        window.location.href = "dashboard.html";
+      },
+      prefill: {
+        name: user.name,
+        email: user.email
+      },
+      theme: { color: "#4ade80" }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
   }
 
   renderPlans();
