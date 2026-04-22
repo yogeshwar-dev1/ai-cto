@@ -19,6 +19,7 @@
     .badge.up { background: #0d2e1a; color: #4ade80; }
     .badge.down { background: #2e0d0d; color: #f87171; }
     .badge.unknown { background: #2a2a2a; color: #888; }
+    .badge.paused { background: #2a2010; color: #facc15; }
     .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stat { background: #111; border-radius: 8px; padding: 10px 12px; }
     .stat-val { font-size: 20px; font-weight: 600; }
@@ -32,51 +33,121 @@
     tr:last-child td { border-bottom: none; }
     .log-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
     .loading { color: #888; font-size: 14px; text-align: center; padding: 40px; }
-    .refresh-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .refresh-btn:hover { background: #2a2a2a; }
-    .logout-btn { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-left: 8px; }
-    .logout-btn:hover { background: #3e1a1a; }
+    .btn { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; border: none; }
+    .btn-gray { background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; }
+    .btn-gray:hover { background: #2a2a2a; }
+    .btn-red { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; }
+    .btn-red:hover { background: #3e1a1a; }
+    .btn-green { background: #0d2e1a; border: 1px solid #4ade80; color: #4ade80; }
+    .btn-green:hover { background: #1a3e2a; }
+    .btn-yellow { background: #2a2010; border: 1px solid #facc15; color: #facc15; }
+    .btn-yellow:hover { background: #3a3010; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .dot.up { background: #4ade80; }
     .dot.down { background: #f87171; }
+    .dot.paused { background: #facc15; }
+    .dot.unknown { background: #888; }
     .welcome { color: #4ade80; font-size: 13px; margin-right: 8px; }
-    .debug { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px; font-size: 11px; color: #888; word-break: break-all; margin-bottom: 16px; display: none; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid #2a2a2a; }
+    .tab { padding: 10px 20px; cursor: pointer; font-size: 14px; color: #888; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+    .tab:hover { color: #fff; }
+    .tab.active { color: #4ade80; border-bottom-color: #4ade80; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Site Manager */
+    .add-site-form { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
+    .form-group label { font-size: 12px; color: #888; }
+    .form-group input { background: #111; border: 1px solid #2a2a2a; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 13px; outline: none; }
+    .form-group input:focus { border-color: #4ade80; }
+    .form-group input::placeholder { color: #555; }
+    .btn-add { background: #4ade80; color: #000; font-weight: 600; padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; align-self: flex-end; }
+    .btn-add:hover { background: #22c55e; }
+    .btn-add:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+    .sites-list { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; }
+    .site-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #2a2a2a; gap: 12px; }
+    .site-row:last-child { border-bottom: none; }
+    .site-info { flex: 1; min-width: 0; }
+    .site-info .name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+    .site-info .url { font-size: 12px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .site-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 20px; font-size: 13px; color: #fff; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    .toast.success { border-color: #4ade80; color: #4ade80; }
+    .toast.error { border-color: #f87171; color: #f87171; }
   </style>
 </head>
 <body>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px;">
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
   <div>
     <h1>🤖 AI CTO Dashboard</h1>
     <div class="subtitle" id="last-updated">Loading...</div>
   </div>
   <div style="display:flex; align-items:center;">
     <span class="welcome" id="welcome-msg"></span>
-    <button class="refresh-btn" id="refresh-btn">↻ Refresh</button>
-    <button class="logout-btn" id="logout-btn">Logout</button>
+    <button class="btn btn-gray" id="refresh-btn">↻ Refresh</button>
+    <button class="btn btn-red" id="logout-btn" style="margin-left:8px;">Logout</button>
   </div>
 </div>
 
-<div class="debug" id="debug-box"></div>
-
-<div id="sites-grid" class="grid">
-  <div class="loading">Loading sites...</div>
+<div class="tabs">
+  <div class="tab active" data-tab="overview">📊 Overview</div>
+  <div class="tab" data-tab="sites">🌐 Manage Sites</div>
+  <div class="tab" data-tab="logs">📋 Logs</div>
 </div>
 
-<div class="log-card">
-  <div class="section-title">📋 Recent Uptime Logs</div>
-  <div id="uptime-table"><div class="loading">Loading logs...</div></div>
+<!-- OVERVIEW TAB -->
+<div class="tab-content active" id="tab-overview">
+  <div id="sites-grid" class="grid">
+    <div class="loading">Loading sites...</div>
+  </div>
+  <div class="log-card">
+    <div class="section-title">📈 Response Time Graph</div>
+    <canvas id="responseChart" height="100"></canvas>
+  </div>
 </div>
 
-<div class="log-card">
-  <div class="section-title">🔧 Fix History</div>
-  <div id="fix-table"><div class="loading">Loading fix logs...</div></div>
+<!-- MANAGE SITES TAB -->
+<div class="tab-content" id="tab-sites">
+  <div class="add-site-form">
+    <div class="section-title">➕ Add New Site</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Site Name</label>
+        <input type="text" id="input-name" placeholder="My Website" />
+      </div>
+      <div class="form-group">
+        <label>Site URL</label>
+        <input type="text" id="input-url" placeholder="https://example.com" />
+      </div>
+      <button class="btn-add" id="btn-add-site">Add Site</button>
+    </div>
+  </div>
+
+  <div class="section-title">🌐 All Sites</div>
+  <div class="sites-list" id="sites-manager-list">
+    <div class="loading">Loading...</div>
+  </div>
 </div>
 
-<div class="log-card">
-  <div class="section-title">📈 Response Time Graph</div>
-  <canvas id="responseChart" height="100"></canvas>
+<!-- LOGS TAB -->
+<div class="tab-content" id="tab-logs">
+  <div class="log-card">
+    <div class="section-title">📋 Recent Uptime Logs</div>
+    <div id="uptime-table"><div class="loading">Loading logs...</div></div>
+  </div>
+  <div class="log-card">
+    <div class="section-title">🔧 Fix History</div>
+    <div id="fix-table"><div class="loading">Loading fix logs...</div></div>
+  </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
   const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
@@ -84,169 +155,212 @@
 
   const headers = {
     "apikey": SUPABASE_KEY,
-    "Authorization": `Bearer ${SUPABASE_KEY}`
+    "Authorization": `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json"
   };
 
   let currentUser = null;
 
-  function showDebug(msg) {
-    const el = document.getElementById("debug-box");
-    el.style.display = "block";
-    el.textContent = msg;
+  // ── Toast ──
+  function showToast(msg, type = "success") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = `toast show ${type}`;
+    setTimeout(() => t.className = "toast", 3000);
   }
 
+  // ── Auth ──
   async function initUser() {
-    // 1. Check existing local session first
     const localUser = JSON.parse(localStorage.getItem("aicto_user"));
     if (localUser) {
       currentUser = localUser;
       document.getElementById("welcome-msg").textContent = `Hi, ${currentUser.name}!`;
       return true;
     }
-
-    // 2. Debug: show full URL so we know what Supabase sent back
-    const fullURL = window.location.href;
-    showDebug("URL: " + fullURL);
-
-    // 3. Try hash fragment first (#access_token=...)
-    let accessToken = null;
     const hash = window.location.hash;
+    let accessToken = null;
     if (hash && hash.includes("access_token")) {
-      const params = new URLSearchParams(hash.slice(1));
-      accessToken = params.get("access_token");
-      showDebug("Found token in hash: " + accessToken?.slice(0, 30) + "...");
+      accessToken = new URLSearchParams(hash.slice(1)).get("access_token");
     }
-
-    // 4. Try query string (?access_token=...)
     if (!accessToken) {
       const query = window.location.search;
       if (query && query.includes("access_token")) {
-        const params = new URLSearchParams(query.slice(1));
-        accessToken = params.get("access_token");
-        showDebug("Found token in query: " + accessToken?.slice(0, 30) + "...");
+        accessToken = new URLSearchParams(query.slice(1)).get("access_token");
       }
     }
-
-    // 5. If we have a token, fetch user info from Supabase
     if (accessToken) {
       try {
         const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${accessToken}`
-          }
+          headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${accessToken}` }
         });
         const data = await res.json();
-        showDebug("Supabase user response: " + JSON.stringify(data).slice(0, 200));
-
         if (data && data.email) {
           currentUser = {
             name: data.user_metadata?.full_name || data.user_metadata?.name || data.email.split("@")[0],
-            email: data.email,
-            plan: "free",
-            id: data.id
+            email: data.email, plan: "free", id: data.id
           };
           localStorage.setItem("aicto_user", JSON.stringify(currentUser));
           window.history.replaceState({}, document.title, window.location.pathname);
           document.getElementById("welcome-msg").textContent = `Hi, ${currentUser.name}!`;
-          document.getElementById("debug-box").style.display = "none";
           return true;
-        } else {
-          showDebug("No email in response. Full: " + JSON.stringify(data));
         }
-      } catch(e) {
-        showDebug("Fetch error: " + e.message);
-      }
+      } catch(e) {}
     }
-
-    // 6. No session found — show debug for 5 seconds then redirect
-    if (!accessToken) {
-      showDebug("No token found in URL. Hash: " + hash + " | Query: " + window.location.search);
-    }
-    setTimeout(() => { window.location.href = "auth.html"; }, 5000);
+    window.location.href = "auth.html";
     return false;
   }
 
-  document.getElementById("logout-btn").addEventListener("click", () => {
-    localStorage.removeItem("aicto_user");
-    window.location.href = "auth.html";
+  // ── Tabs ──
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+      if (tab.dataset.tab === "sites") loadSitesManager();
+      if (tab.dataset.tab === "logs") { loadUptimeLogs(); loadFixLogs(); }
+    });
   });
 
-  async function fetchSites() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?active=eq.true`, { headers });
-    return res.json();
-  }
-
-  async function fetchUptimeLogs() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=20`, { headers });
-    return res.json();
-  }
-
-  async function fetchFixLogs() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/fix_logs?order=created_at.desc&limit=10`, { headers });
-    return res.json();
-  }
-
+  // ── Overview ──
   async function fetchStats(siteUrl) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=100`, { headers });
     const logs = await res.json();
-    if (!logs.length) return { uptime: 100, total: 0, avg: 0, status: "unknown" };
+    if (!Array.isArray(logs) || !logs.length) return { uptime: 100, total: 0, avg: 0, status: "unknown" };
     const total = logs.length;
     const up = logs.filter(l => l.status === "up").length;
     const times = logs.filter(l => l.response_time).map(l => l.response_time);
     const avg = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0;
-    return {
-      uptime: Math.round((up / total) * 100),
-      total,
-      avg,
-      status: logs[0]?.status || "unknown"
-    };
+    return { uptime: Math.round((up / total) * 100), total, avg, status: logs[0]?.status || "unknown" };
   }
 
-  async function loadSites() {
-    const sites = await fetchSites();
+  async function loadOverview() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?order=created_at.desc`, { headers });
+    const sites = await res.json();
     const grid = document.getElementById("sites-grid");
-    if (!sites.length) {
-      grid.innerHTML = '<div class="loading">No sites yet. Add one via Telegram!</div>';
+    if (!Array.isArray(sites) || !sites.length) {
+      grid.innerHTML = '<div class="loading">No sites yet. Add one in the Manage Sites tab!</div>';
       return;
     }
     grid.innerHTML = "";
     for (const site of sites) {
-      const stats = await fetchStats(site.url);
+      const stats = site.active ? await fetchStats(site.url) : { uptime: 0, total: 0, avg: 0, status: "paused" };
       const uptimeClass = stats.uptime >= 90 ? "uptime-good" : "uptime-bad";
+      const statusLabel = !site.active ? "PAUSED" : stats.status.toUpperCase();
+      const statusClass = !site.active ? "paused" : stats.status;
       grid.innerHTML += `
         <div class="card">
           <div class="card-header">
-            <div class="site-name"><span class="dot ${stats.status}"></span>${site.name}</div>
-            <span class="badge ${stats.status}">${stats.status.toUpperCase()}</span>
+            <div class="site-name"><span class="dot ${statusClass}"></span>${site.name}</div>
+            <span class="badge ${statusClass}">${statusLabel}</span>
           </div>
           <div class="site-url">${site.url}</div>
           <div class="stats">
-            <div class="stat">
-              <div class="stat-val ${uptimeClass}">${stats.uptime}%</div>
-              <div class="stat-lbl">Uptime</div>
-            </div>
-            <div class="stat">
-              <div class="stat-val">${stats.avg}ms</div>
-              <div class="stat-lbl">Avg Response</div>
-            </div>
-            <div class="stat">
-              <div class="stat-val">${stats.total}</div>
-              <div class="stat-lbl">Total Checks</div>
-            </div>
-            <div class="stat">
-              <div class="stat-val" style="font-size:13px; color:#888;">${new Date(site.created_at).toLocaleDateString()}</div>
-              <div class="stat-lbl">Added</div>
-            </div>
+            <div class="stat"><div class="stat-val ${uptimeClass}">${stats.uptime}%</div><div class="stat-lbl">Uptime</div></div>
+            <div class="stat"><div class="stat-val">${stats.avg}ms</div><div class="stat-lbl">Avg Response</div></div>
+            <div class="stat"><div class="stat-val">${stats.total}</div><div class="stat-lbl">Total Checks</div></div>
+            <div class="stat"><div class="stat-val" style="font-size:13px;color:#888;">${new Date(site.created_at).toLocaleDateString()}</div><div class="stat-lbl">Added</div></div>
           </div>
         </div>`;
     }
   }
 
+  // ── Manage Sites ──
+  async function loadSitesManager() {
+    const el = document.getElementById("sites-manager-list");
+    el.innerHTML = '<div class="loading">Loading...</div>';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?order=created_at.desc`, { headers });
+    const sites = await res.json();
+    if (!Array.isArray(sites) || !sites.length) {
+      el.innerHTML = '<div class="loading">No sites yet. Add one above!</div>';
+      return;
+    }
+    el.innerHTML = sites.map(site => `
+      <div class="site-row" id="row-${site.id}">
+        <div class="site-info">
+          <div class="name"><span class="dot ${site.active ? 'up' : 'paused'}"></span>${site.name}</div>
+          <div class="url">${site.url}</div>
+        </div>
+        <div class="site-actions">
+          <button class="btn ${site.active ? 'btn-yellow' : 'btn-green'}" onclick="toggleSite('${site.id}', ${site.active})">
+            ${site.active ? '⏸ Pause' : '▶ Resume'}
+          </button>
+          <button class="btn btn-red" onclick="removeSite('${site.id}', '${site.name}')">🗑 Remove</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function addSite() {
+    const name = document.getElementById("input-name").value.trim();
+    const url = document.getElementById("input-url").value.trim();
+    if (!name || !url) { showToast("Please fill in both fields", "error"); return; }
+    if (!url.startsWith("http")) { showToast("URL must start with https://", "error"); return; }
+    const btn = document.getElementById("btn-add-site");
+    btn.disabled = true;
+    btn.textContent = "Adding...";
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/sites`, {
+        method: "POST",
+        headers: { ...headers, "Prefer": "return=minimal" },
+        body: JSON.stringify({ name, url, active: true })
+      });
+      if (res.ok || res.status === 201) {
+        showToast(`✅ ${name} added!`);
+        document.getElementById("input-name").value = "";
+        document.getElementById("input-url").value = "";
+        loadSitesManager();
+        loadOverview();
+      } else {
+        const err = await res.text();
+        showToast("Error: " + err, "error");
+      }
+    } catch(e) {
+      showToast("Network error", "error");
+    }
+    btn.disabled = false;
+    btn.textContent = "Add Site";
+  }
+
+  async function toggleSite(id, currentActive) {
+    const newActive = !currentActive;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, {
+      method: "PATCH",
+      headers: { ...headers, "Prefer": "return=minimal" },
+      body: JSON.stringify({ active: newActive })
+    });
+    if (res.ok) {
+      showToast(newActive ? "▶ Site resumed" : "⏸ Site paused");
+      loadSitesManager();
+      loadOverview();
+    } else {
+      showToast("Failed to update", "error");
+    }
+  }
+
+  async function removeSite(id, name) {
+    if (!confirm(`Remove "${name}"? This cannot be undone.`)) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, {
+      method: "DELETE",
+      headers
+    });
+    if (res.ok) {
+      showToast(`🗑 ${name} removed`);
+      loadSitesManager();
+      loadOverview();
+    } else {
+      showToast("Failed to remove", "error");
+    }
+  }
+
+  document.getElementById("btn-add-site").addEventListener("click", addSite);
+
+  // ── Logs ──
   async function loadUptimeLogs() {
-    const logs = await fetchUptimeLogs();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=20`, { headers });
+    const logs = await res.json();
     const el = document.getElementById("uptime-table");
-    if (!logs.length) { el.innerHTML = '<div class="loading">No logs yet.</div>'; return; }
+    if (!Array.isArray(logs) || !logs.length) { el.innerHTML = '<div class="loading">No logs yet.</div>'; return; }
     el.innerHTML = `<table>
       <tr><th>Site</th><th>Status</th><th>Response</th><th>Time</th></tr>
       ${logs.map(l => `<tr>
@@ -259,9 +373,10 @@
   }
 
   async function loadFixLogs() {
-    const logs = await fetchFixLogs();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/fix_logs?order=created_at.desc&limit=10`, { headers });
+    const logs = await res.json();
     const el = document.getElementById("fix-table");
-    if (!logs.length) { el.innerHTML = '<div class="loading">No fixes yet.</div>'; return; }
+    if (!Array.isArray(logs) || !logs.length) { el.innerHTML = '<div class="loading">No fixes yet.</div>'; return; }
     el.innerHTML = `<table>
       <tr><th>Site</th><th>Error</th><th>Fix</th><th>Deployed</th><th>Time</th></tr>
       ${logs.map(l => `<tr>
@@ -274,8 +389,8 @@
     </table>`;
   }
 
+  // ── Chart ──
   let chartInstance = null;
-
   async function loadChart() {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=30`, { headers });
@@ -283,23 +398,13 @@
       if (!Array.isArray(logs) || !logs.length) return;
       const filtered = logs.filter(l => l.response_time > 0).reverse();
       if (!filtered.length) return;
-      const labels = filtered.map(l => new Date(l.checked_at).toLocaleTimeString());
-      const data = filtered.map(l => l.response_time);
       const ctx = document.getElementById("responseChart").getContext("2d");
       if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
         type: "line",
         data: {
-          labels,
-          datasets: [{
-            label: "Response Time (ms)",
-            data,
-            borderColor: "#4ade80",
-            backgroundColor: "rgba(74,222,128,0.1)",
-            tension: 0.4,
-            fill: true,
-            pointRadius: 3
-          }]
+          labels: filtered.map(l => new Date(l.checked_at).toLocaleTimeString()),
+          datasets: [{ label: "Response Time (ms)", data: filtered.map(l => l.response_time), borderColor: "#4ade80", backgroundColor: "rgba(74,222,128,0.1)", tension: 0.4, fill: true, pointRadius: 3 }]
         },
         options: {
           responsive: true,
@@ -310,22 +415,24 @@
           }
         }
       });
-    } catch(e) { console.error("Chart error:", e); }
+    } catch(e) {}
   }
 
+  // ── Main ──
   async function loadAll() {
     document.getElementById("last-updated").textContent = "Refreshing...";
-    await Promise.all([loadSites(), loadUptimeLogs(), loadFixLogs(), loadChart()]);
+    await Promise.all([loadOverview(), loadChart()]);
     document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString();
   }
 
   document.getElementById("refresh-btn").addEventListener("click", loadAll);
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    localStorage.removeItem("aicto_user");
+    window.location.href = "auth.html";
+  });
 
   initUser().then(ok => {
-    if (ok) {
-      loadAll();
-      setInterval(loadAll, 30000);
-    }
+    if (ok) { loadAll(); setInterval(loadAll, 30000); }
   });
 </script>
 </body>
