@@ -1,22 +1,31 @@
-```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>AI CTO Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        h1 {
-            background-color: blue;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI CTO</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    p { color: #888; font-size: 16px; margin-bottom: 32px; }
+    .btn { display: inline-block; background: #4ade80; color: #000; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; margin: 8px; }
+    .btn-outline { display: inline-block; background: transparent; color: #fff; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; margin: 8px; border: 1px solid #2a2a2a; }
+    .btn:hover { background: #22c55e; }
+    .btn-outline:hover { background: #1a1a1a; }
+  </style>
+  <script>
+    const user = JSON.parse(localStorage.getItem("aicto_user"));
+    if (user) window.location.href = "dashboard.html";
+    else window.location.href = "auth.html";
+  </script>
 </head>
 <body>
-    <h1>AI CTO is Running 🤖</h1>
-    <p>Your AI is watching and managing your website automatically.</p>
+  <div>
+    <h1>🤖 AI CTO</h1>
+    <p>Monitor your sites with AI</p>
+    <a href="auth.html" class="btn">Get Started</a>
+    <a href="pricing.html" class="btn-outline">View Pricing</a>
+  </div>
 </body>
 </html>
