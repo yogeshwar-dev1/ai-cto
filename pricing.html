@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI CTO — Pricing</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; padding: 40px 24px; }
+    h1 { font-size: 32px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+    .sub { color: #888; font-size: 16px; text-align: center; margin-bottom: 16px; }
+    .toggle { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 40px; }
+    .toggle-label { font-size: 14px; color: #888; }
+    .toggle-label.active { color: #fff; font-weight: 600; }
+    .switch { width: 48px; height: 26px; background: #2a2a2a; border-radius: 20px; cursor: pointer; position: relative; transition: background 0.3s; }
+    .switch.yearly { background: #4ade80; }
+    .switch::after { content: ''; position: absolute; width: 20px; height: 20px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: left 0.3s; }
+    .switch.yearly::after { left: 25px; }
+    .save-badge { background: #0d2e1a; color: #4ade80; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto 40px; }
+    .plan { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 28px; position: relative; }
+    .plan.popular { border-color: #4ade80; }
+    .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #4ade80; color: #000; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; }
+    .plan-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .plan-desc { font-size: 13px; color: #888; margin-bottom: 20px; }
+    .price { font-size: 36px; font-weight: 800; margin-bottom: 4px; }
+    .price span { font-size: 16px; font-weight: 400; color: #888; }
+    .price-note { font-size: 12px; color: #888; margin-bottom: 24px; }
+    .features { list-style: none; margin-bottom: 28px; }
+    .features li { font-size: 13px; color: #ccc; padding: 6px 0; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; gap: 8px; }
+    .features li:last-child { border-bottom: none; }
+    .features li::before { content: '✓'; color: #4ade80; font-weight: 700; flex-shrink: 0; }
+    .features li.no::before { content: '✗'; color: #f87171; }
+    .btn { width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
+    .btn-free { background: #2a2a2a; color: #fff; }
+    .btn-free:hover { background: #3a3a3a; }
+    .btn-paid { background: #4ade80; color: #000; }
+    .btn-paid:hover { background: #22c55e; }
+    .btn-popular { background: #4ade80; color: #000; }
+    .faq { max-width: 700px; margin: 0 auto; }
+    .faq h2 { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 24px; }
+    .faq-item { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
+    .faq-q { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .faq-a { font-size: 13px; color: #888; }
+  </style>
+</head>
+<body>
+
+<h1>Simple, Transparent Pricing</h1>
+<div class="sub">Start free. Upgrade when you need more.</div>
+
+<div class="toggle">
+  <div class="toggle-label active" id="label-monthly">Monthly</div>
+  <div class="switch" id="toggle-switch"></div>
+  <div class="toggle-label" id="label-yearly">Yearly <span class="save-badge">Save 17%</span></div>
+</div>
+
+<div class="grid" id="plans-grid"></div>
+
+<div class="faq">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-item">
+    <div class="faq-q">Can I try before paying?</div>
+    <div class="faq-a">Yes! The Free plan gives you 1 site check so you can see exactly how it works before upgrading.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">How does billing work?</div>
+    <div class="faq-a">You pay monthly or yearly via Razorpay. Cancel anytime — no hidden fees.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What happens if my site goes down?</div>
+    <div class="faq-a">You get instant alerts via Telegram and email the moment any site goes down.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Can I upgrade or downgrade?</div>
+    <div class="faq-a">Yes, you can change your plan anytime from your dashboard.</div>
+  </div>
+</div>
+
+<script>
+  const plans = [
+    {
+      name: "Free",
+      desc: "Try it out",
+      monthly: 0,
+      yearly: 0,
+      features: ["1 site", "1 check only", "Public status page", { text: "24/7 monitoring", no: true }, { text: "Email alerts", no: true }, { text: "AI predictions", no: true }],
+      btn: "Get Started Free",
+      btnClass: "btn-free",
+      popular: false
+    },
+    {
+      name: "Starter",
+      desc: "For freelancers",
+      monthly: 499,
+      yearly: 4999,
+      features: ["5 sites", "24/7 monitoring", "Email alerts", "Public status page", "Uptime reports", { text: "AI predictions", no: true }],
+      btn: "Get Starter",
+      btnClass: "btn-paid",
+      popular: false
+    },
+    {
+      name: "Pro",
+      desc: "For small businesses",
+      monthly: 1499,
+      yearly: 14999,
+      features: ["15 sites", "24/7 monitoring", "Email alerts", "AI predictions", "Weekly reports", "Incident history"],
+      btn: "Get Pro",
+      btnClass: "btn-popular",
+      popular: true
+    },
+    {
+      name: "Business",
+      desc: "For agencies",
+      monthly: 3999,
+      yearly: 39999,
+      features: ["Unlimited sites", "24/7 monitoring", "Email alerts", "AI predictions", "Weekly reports", "Priority support"],
+      btn: "Get Business",
+      btnClass: "btn-paid",
+      popular: false
+    }
+  ];
+
+  let isYearly = false;
+
+  function renderPlans() {
+    const grid = document.getElementById("plans-grid");
+    grid.innerHTML = plans.map(p => `
+      <div class="plan ${p.popular ? 'popular' : ''}">
+        ${p.popular ? '<div class="popular-badge">⭐ Most Popular</div>' : ''}
+        <div class="plan-name">${p.name}</div>
+        <div class="plan-desc">${p.desc}</div>
+        <div class="price">${p.monthly === 0 ? 'Free' : '₹' + (isYearly ? p.yearly.toLocaleString() : p.monthly.toLocaleString())} ${p.monthly > 0 ? `<span>/${isYearly ? 'year' : 'month'}</span>` : ''}</div>
+        <div class="price-note">${p.monthly === 0 ? 'No credit card needed' : isYearly ? `₹${p.monthly.toLocaleString()}/mo billed yearly` : 'Cancel anytime'}</div>
+        <ul class="features">
+          ${p.features.map(f => typeof f === 'string' ? `<li>${f}</li>` : `<li class="no">${f.text}</li>`).join('')}
+        </ul>
+        <button class="btn ${p.btnClass}" onclick="selectPlan('${p.name}')">${p.btn}</button>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById("toggle-switch").addEventListener("click", () => {
+    isYearly = !isYearly;
+    document.getElementById("toggle-switch").className = "switch" + (isYearly ? " yearly" : "");
+    document.getElementById("label-monthly").className = "toggle-label" + (!isYearly ? " active" : "");
+    document.getElementById("label-yearly").className = "toggle-label" + (isYearly ? " active" : "");
+    renderPlans();
+  });
+
+  function selectPlan(plan) {
+    if (plan === "Free") {
+      window.location.href = "auth.html";
+    } else {
+      alert(`Payment coming soon! You selected: ${plan}\n\nWe will integrate Razorpay next.`);
+    }
+  }
+
+  renderPlans();
+</script>
+</body>
+</html>
