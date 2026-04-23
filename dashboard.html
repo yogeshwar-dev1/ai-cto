@@ -20,6 +20,8 @@
     .badge.down { background: #2e0d0d; color: #f87171; }
     .badge.unknown { background: #2a2a2a; color: #888; }
     .badge.paused { background: #2a2010; color: #facc15; }
+    .badge.free { background: #1a1a2e; color: #818cf8; }
+    .badge.pro { background: #1a2e1a; color: #4ade80; }
     .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stat { background: #111; border-radius: 8px; padding: 10px 12px; }
     .stat-val { font-size: 20px; font-weight: 600; }
@@ -37,27 +39,23 @@
     .btn-gray { background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; }
     .btn-gray:hover { background: #2a2a2a; }
     .btn-red { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; }
-    .btn-red:hover { background: #3e1a1a; }
     .btn-green { background: #0d2e1a; border: 1px solid #4ade80; color: #4ade80; }
     .btn-green:hover { background: #1a3e2a; }
+    .btn-purple { background: #1a1a2e; border: 1px solid #818cf8; color: #818cf8; }
     .btn-yellow { background: #2a2010; border: 1px solid #facc15; color: #facc15; }
-    .btn-yellow:hover { background: #3a3010; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .dot.up { background: #4ade80; }
     .dot.down { background: #f87171; }
     .dot.paused { background: #facc15; }
     .dot.unknown { background: #888; }
     .welcome { color: #4ade80; font-size: 13px; margin-right: 8px; }
-
-    /* Tabs */
+    .plan-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
     .tabs { display: flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid #2a2a2a; }
     .tab { padding: 10px 20px; cursor: pointer; font-size: 14px; color: #888; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
     .tab:hover { color: #fff; }
     .tab.active { color: #4ade80; border-bottom-color: #4ade80; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-
-    /* Site Manager */
     .add-site-form { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
     .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
     .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
@@ -79,6 +77,20 @@
     .toast.show { opacity: 1; }
     .toast.success { border-color: #4ade80; color: #4ade80; }
     .toast.error { border-color: #f87171; color: #f87171; }
+    .plan-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+    .plan-card.pro { border-color: #4ade80; }
+    .plan-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .plan-price { font-size: 28px; font-weight: 700; color: #4ade80; margin-bottom: 16px; }
+    .plan-features { list-style: none; margin-bottom: 20px; }
+    .plan-features li { padding: 6px 0; font-size: 13px; color: #ccc; }
+    .plan-features li::before { content: "✅ "; }
+    .invite-form { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .member-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
+    .member-row:last-child { border-bottom: none; }
+    .limit-bar { background: #2a2a2a; border-radius: 4px; height: 6px; margin-top: 8px; }
+    .limit-fill { background: #4ade80; border-radius: 4px; height: 6px; transition: width 0.3s; }
+    .limit-fill.warning { background: #facc15; }
+    .limit-fill.danger { background: #f87171; }
   </style>
 </head>
 <body>
@@ -88,16 +100,19 @@
     <h1>🤖 AI CTO Dashboard</h1>
     <div class="subtitle" id="last-updated">Loading...</div>
   </div>
-  <div style="display:flex; align-items:center;">
+  <div style="display:flex; align-items:center; gap:8px;">
     <span class="welcome" id="welcome-msg"></span>
+    <span class="badge free" id="plan-badge">FREE</span>
     <button class="btn btn-gray" id="refresh-btn">↻ Refresh</button>
-    <button class="btn btn-red" id="logout-btn" style="margin-left:8px;">Logout</button>
+    <button class="btn btn-red" id="logout-btn">Logout</button>
   </div>
 </div>
 
 <div class="tabs">
   <div class="tab active" data-tab="overview">📊 Overview</div>
   <div class="tab" data-tab="sites">🌐 Manage Sites</div>
+  <div class="tab" data-tab="team">👥 Team</div>
+  <div class="tab" data-tab="account">⚙️ Account</div>
   <div class="tab" data-tab="logs">📋 Logs</div>
 </div>
 
@@ -116,6 +131,7 @@
 <div class="tab-content" id="tab-sites">
   <div class="add-site-form">
     <div class="section-title">➕ Add New Site</div>
+    <div id="site-limit-info" style="margin-bottom:12px;"></div>
     <div class="form-row">
       <div class="form-group">
         <label>Site Name</label>
@@ -128,10 +144,67 @@
       <button class="btn-add" id="btn-add-site">Add Site</button>
     </div>
   </div>
-
-  <div class="section-title">🌐 All Sites</div>
+  <div class="section-title">🌐 Your Sites</div>
   <div class="sites-list" id="sites-manager-list">
     <div class="loading">Loading...</div>
+  </div>
+</div>
+
+<!-- TEAM TAB -->
+<div class="tab-content" id="tab-team">
+  <div class="invite-form">
+    <div class="section-title">➕ Invite Teammate</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="invite-email" placeholder="teammate@email.com" />
+      </div>
+      <button class="btn-add" id="btn-invite">Send Invite</button>
+    </div>
+  </div>
+  <div class="section-title">👥 Team Members</div>
+  <div class="log-card" id="team-list">
+    <div class="loading">Loading team...</div>
+  </div>
+</div>
+
+<!-- ACCOUNT TAB -->
+<div class="tab-content" id="tab-account">
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px;">
+    <div class="plan-card">
+      <div class="plan-title">Free Plan</div>
+      <div class="plan-price">$0<span style="font-size:14px;color:#888;">/mo</span></div>
+      <ul class="plan-features">
+        <li>Up to 3 sites</li>
+        <li>5-minute checks</li>
+        <li>Email alerts</li>
+        <li>7-day log history</li>
+      </ul>
+      <button class="btn btn-gray" id="btn-free" disabled>Current Plan</button>
+    </div>
+    <div class="plan-card pro">
+      <div class="plan-title">Pro Plan ⚡</div>
+      <div class="plan-price">$9<span style="font-size:14px;color:#888;">/mo</span></div>
+      <ul class="plan-features">
+        <li>Unlimited sites</li>
+        <li>1-minute checks</li>
+        <li>SMS + Email alerts</li>
+        <li>90-day log history</li>
+        <li>Team members</li>
+        <li>Auto-fix AI</li>
+      </ul>
+      <button class="btn btn-green" id="btn-upgrade" onclick="upgradePlan()">Upgrade to Pro</button>
+    </div>
+  </div>
+
+  <div class="log-card">
+    <div class="section-title">👤 Account Info</div>
+    <div id="account-info" style="font-size:13px; color:#ccc; line-height:2;"></div>
+  </div>
+
+  <div class="log-card" style="margin-top:16px;">
+    <div class="section-title">📊 Usage</div>
+    <div id="usage-info"></div>
   </div>
 </div>
 
@@ -160,8 +233,8 @@
   };
 
   let currentUser = null;
+  let userMeta = null;
 
-  // ── Toast ──
   function showToast(msg, type = "success") {
     const t = document.getElementById("toast");
     t.textContent = msg;
@@ -169,24 +242,19 @@
     setTimeout(() => t.className = "toast", 3000);
   }
 
-  // ── Auth ──
+  // Auth
   async function initUser() {
-    const localUser = JSON.parse(localStorage.getItem("aicto_user"));
+    const localUser = JSON.parse(localStorage.getItem("aicto_user") || "null");
     if (localUser) {
       currentUser = localUser;
-      document.getElementById("welcome-msg").textContent = `Hi, ${currentUser.name}!`;
+      await loadUserMeta();
+      updateHeader();
       return true;
     }
     const hash = window.location.hash;
     let accessToken = null;
     if (hash && hash.includes("access_token")) {
       accessToken = new URLSearchParams(hash.slice(1)).get("access_token");
-    }
-    if (!accessToken) {
-      const query = window.location.search;
-      if (query && query.includes("access_token")) {
-        accessToken = new URLSearchParams(query.slice(1)).get("access_token");
-      }
     }
     if (accessToken) {
       try {
@@ -197,11 +265,12 @@
         if (data && data.email) {
           currentUser = {
             name: data.user_metadata?.full_name || data.user_metadata?.name || data.email.split("@")[0],
-            email: data.email, plan: "free", id: data.id
+            email: data.email, id: data.id
           };
           localStorage.setItem("aicto_user", JSON.stringify(currentUser));
           window.history.replaceState({}, document.title, window.location.pathname);
-          document.getElementById("welcome-msg").textContent = `Hi, ${currentUser.name}!`;
+          await loadUserMeta();
+          updateHeader();
           return true;
         }
       } catch(e) {}
@@ -210,7 +279,41 @@
     return false;
   }
 
-  // ── Tabs ──
+  async function loadUserMeta() {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser.id}`, { headers });
+      const data = await res.json();
+      if (data && data.length) {
+        userMeta = data[0];
+      } else {
+        // Create user meta if not exists
+        await fetch(`${SUPABASE_URL}/rest/v1/users_meta`, {
+          method: "POST",
+          headers: { ...headers, "Prefer": "return=minimal" },
+          body: JSON.stringify({
+            id: currentUser.id,
+            email: currentUser.email,
+            name: currentUser.name,
+            plan: "free",
+            sites_limit: 3
+          })
+        });
+        userMeta = { plan: "free", sites_limit: 3 };
+      }
+    } catch(e) {}
+  }
+
+  function updateHeader() {
+    if (!currentUser) return;
+    document.getElementById("welcome-msg").textContent = `Hi, ${currentUser.name}!`;
+    const planBadge = document.getElementById("plan-badge");
+    const plan = userMeta?.plan || "free";
+    planBadge.textContent = plan.toUpperCase();
+    planBadge.className = `badge ${plan}`;
+  }
+
+  // Tabs
   document.querySelectorAll(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -219,10 +322,12 @@
       document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
       if (tab.dataset.tab === "sites") loadSitesManager();
       if (tab.dataset.tab === "logs") { loadUptimeLogs(); loadFixLogs(); }
+      if (tab.dataset.tab === "team") loadTeam();
+      if (tab.dataset.tab === "account") loadAccount();
     });
   });
 
-  // ── Overview ──
+  // Overview
   async function fetchStats(siteUrl) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=100`, { headers });
     const logs = await res.json();
@@ -235,7 +340,7 @@
   }
 
   async function loadOverview() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?order=created_at.desc`, { headers });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&order=created_at.desc`, { headers });
     const sites = await res.json();
     const grid = document.getElementById("sites-grid");
     if (!Array.isArray(sites) || !sites.length) {
@@ -265,18 +370,30 @@
     }
   }
 
-  // ── Manage Sites ──
+  // Manage Sites
   async function loadSitesManager() {
     const el = document.getElementById("sites-manager-list");
     el.innerHTML = '<div class="loading">Loading...</div>';
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?order=created_at.desc`, { headers });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&order=created_at.desc`, { headers });
     const sites = await res.json();
+
+    // Show limit info
+    const plan = userMeta?.plan || "free";
+    const limit = userMeta?.sites_limit || 3;
+    const count = Array.isArray(sites) ? sites.length : 0;
+    const pct = Math.min((count / limit) * 100, 100);
+    const fillClass = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "";
+    document.getElementById("site-limit-info").innerHTML = `
+      <div style="font-size:12px;color:#888;">Sites used: <strong style="color:#fff;">${count}/${plan === "pro" ? "∞" : limit}</strong></div>
+      ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : ""}
+    `;
+
     if (!Array.isArray(sites) || !sites.length) {
       el.innerHTML = '<div class="loading">No sites yet. Add one above!</div>';
       return;
     }
     el.innerHTML = sites.map(site => `
-      <div class="site-row" id="row-${site.id}">
+      <div class="site-row">
         <div class="site-info">
           <div class="name"><span class="dot ${site.active ? 'up' : 'paused'}"></span>${site.name}</div>
           <div class="url">${site.url}</div>
@@ -296,66 +413,163 @@
     const url = document.getElementById("input-url").value.trim();
     if (!name || !url) { showToast("Please fill in both fields", "error"); return; }
     if (!url.startsWith("http")) { showToast("URL must start with https://", "error"); return; }
+
+    // Check limit
+    const plan = userMeta?.plan || "free";
+    const limit = userMeta?.sites_limit || 3;
+    if (plan !== "pro") {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&active=eq.true`, { headers });
+      const sites = await res.json();
+      if (sites.length >= limit) {
+        showToast(`Free plan limit: ${limit} sites. Upgrade to Pro for unlimited!`, "error");
+        return;
+      }
+    }
+
     const btn = document.getElementById("btn-add-site");
-    btn.disabled = true;
-    btn.textContent = "Adding...";
+    btn.disabled = true; btn.textContent = "Adding...";
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/sites`, {
         method: "POST",
         headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({ name, url, active: true })
+        body: JSON.stringify({ name, url, active: true, user_id: currentUser?.id })
       });
       if (res.ok || res.status === 201) {
         showToast(`✅ ${name} added!`);
         document.getElementById("input-name").value = "";
         document.getElementById("input-url").value = "";
-        loadSitesManager();
-        loadOverview();
+        loadSitesManager(); loadOverview();
       } else {
-        const err = await res.text();
-        showToast("Error: " + err, "error");
+        showToast("Error adding site", "error");
       }
-    } catch(e) {
-      showToast("Network error", "error");
-    }
-    btn.disabled = false;
-    btn.textContent = "Add Site";
+    } catch(e) { showToast("Network error", "error"); }
+    btn.disabled = false; btn.textContent = "Add Site";
   }
 
   async function toggleSite(id, currentActive) {
-    const newActive = !currentActive;
     const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, {
-      method: "PATCH",
-      headers: { ...headers, "Prefer": "return=minimal" },
-      body: JSON.stringify({ active: newActive })
+      method: "PATCH", headers: { ...headers, "Prefer": "return=minimal" },
+      body: JSON.stringify({ active: !currentActive })
     });
-    if (res.ok) {
-      showToast(newActive ? "▶ Site resumed" : "⏸ Site paused");
-      loadSitesManager();
-      loadOverview();
-    } else {
-      showToast("Failed to update", "error");
-    }
+    if (res.ok) { showToast(!currentActive ? "▶ Resumed" : "⏸ Paused"); loadSitesManager(); loadOverview(); }
+    else showToast("Failed to update", "error");
   }
 
   async function removeSite(id, name) {
-    if (!confirm(`Remove "${name}"? This cannot be undone.`)) return;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, {
-      method: "DELETE",
-      headers
-    });
-    if (res.ok) {
-      showToast(`🗑 ${name} removed`);
-      loadSitesManager();
-      loadOverview();
-    } else {
-      showToast("Failed to remove", "error");
-    }
+    if (!confirm(`Remove "${name}"?`)) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, { method: "DELETE", headers });
+    if (res.ok) { showToast(`🗑 ${name} removed`); loadSitesManager(); loadOverview(); }
+    else showToast("Failed to remove", "error");
   }
 
   document.getElementById("btn-add-site").addEventListener("click", addSite);
 
-  // ── Logs ──
+  // Team
+  async function loadTeam() {
+    const el = document.getElementById("team-list");
+    el.innerHTML = '<div class="loading">Loading...</div>';
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/teams?owner_id=eq.${currentUser?.id}&order=created_at.desc`, { headers });
+      const members = await res.json();
+      if (!members.length) {
+        el.innerHTML = '<div class="loading">No team members yet. Invite someone above!</div>';
+        return;
+      }
+      el.innerHTML = members.map(m => `
+        <div class="member-row">
+          <div>
+            <div style="font-size:14px;font-weight:500;">${m.member_email}</div>
+            <div style="font-size:12px;color:#888;">Invited ${new Date(m.created_at).toLocaleDateString()}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="badge ${m.status === 'accepted' ? 'up' : 'unknown'}">${m.status.toUpperCase()}</span>
+            <button class="btn btn-red" onclick="removeMember('${m.id}', '${m.member_email}')">Remove</button>
+          </div>
+        </div>
+      `).join("");
+    } catch(e) {
+      el.innerHTML = '<div class="loading">Error loading team</div>';
+    }
+  }
+
+  async function inviteMember() {
+    const email = document.getElementById("invite-email").value.trim();
+    if (!email) { showToast("Enter an email address", "error"); return; }
+
+    const plan = userMeta?.plan || "free";
+    if (plan !== "pro") {
+      showToast("Team members require Pro plan. Upgrade to invite teammates!", "error");
+      return;
+    }
+
+    const btn = document.getElementById("btn-invite");
+    btn.disabled = true; btn.textContent = "Inviting...";
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/teams`, {
+        method: "POST",
+        headers: { ...headers, "Prefer": "return=minimal" },
+        body: JSON.stringify({ owner_id: currentUser?.id, member_email: email, status: "pending" })
+      });
+      if (res.ok || res.status === 201) {
+        showToast(`✅ Invite sent to ${email}!`);
+        document.getElementById("invite-email").value = "";
+        loadTeam();
+      } else { showToast("Error sending invite", "error"); }
+    } catch(e) { showToast("Network error", "error"); }
+    btn.disabled = false; btn.textContent = "Send Invite";
+  }
+
+  async function removeMember(id, email) {
+    if (!confirm(`Remove ${email} from team?`)) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/teams?id=eq.${id}`, { method: "DELETE", headers });
+    if (res.ok) { showToast(`Removed ${email}`); loadTeam(); }
+    else showToast("Failed to remove", "error");
+  }
+
+  document.getElementById("btn-invite").addEventListener("click", inviteMember);
+
+  // Account
+  async function loadAccount() {
+    const plan = userMeta?.plan || "free";
+    document.getElementById("btn-free").disabled = plan === "free";
+    document.getElementById("btn-upgrade").style.display = plan === "pro" ? "none" : "block";
+
+    document.getElementById("account-info").innerHTML = `
+      <div>👤 Name: <strong>${currentUser?.name}</strong></div>
+      <div>📧 Email: <strong>${currentUser?.email}</strong></div>
+      <div>📋 Plan: <strong>${plan.toUpperCase()}</strong></div>
+      <div>🕒 Member since: <strong>${new Date().toLocaleDateString()}</strong></div>
+    `;
+
+    const sitesRes = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&active=eq.true`, { headers });
+    const sites = await sitesRes.json();
+    const count = Array.isArray(sites) ? sites.length : 0;
+    const limit = plan === "pro" ? "∞" : (userMeta?.sites_limit || 3);
+    const pct = plan === "pro" ? 0 : Math.min((count / (userMeta?.sites_limit || 3)) * 100, 100);
+    const fillClass = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "";
+
+    document.getElementById("usage-info").innerHTML = `
+      <div style="font-size:13px;color:#888;margin-bottom:8px;">Sites: <strong style="color:#fff;">${count} / ${limit}</strong></div>
+      ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : '<div style="font-size:12px;color:#4ade80;">✅ Unlimited sites on Pro</div>'}
+    `;
+  }
+
+  async function upgradePlan() {
+    if (!confirm("Upgrade to Pro plan for $9/month? (This is a demo — no payment will be charged)")) return;
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser?.id}`, {
+        method: "PATCH",
+        headers: { ...headers, "Prefer": "return=minimal" },
+        body: JSON.stringify({ plan: "pro", sites_limit: 999 })
+      });
+      userMeta = { ...userMeta, plan: "pro", sites_limit: 999 };
+      updateHeader();
+      showToast("🎉 Upgraded to Pro!");
+      loadAccount();
+    } catch(e) { showToast("Upgrade failed", "error"); }
+  }
+
+  // Logs
   async function loadUptimeLogs() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=20`, { headers });
     const logs = await res.json();
@@ -389,7 +603,7 @@
     </table>`;
   }
 
-  // ── Chart ──
+  // Chart
   let chartInstance = null;
   async function loadChart() {
     try {
@@ -418,7 +632,7 @@
     } catch(e) {}
   }
 
-  // ── Main ──
+  // Main
   async function loadAll() {
     document.getElementById("last-updated").textContent = "Refreshing...";
     await Promise.all([loadOverview(), loadChart()]);
@@ -431,9 +645,7 @@
     window.location.href = "auth.html";
   });
 
-  initUser().then(ok => {
-    if (ok) { loadAll(); setInterval(loadAll, 30000); }
-  });
+  initUser().then(ok => { if (ok) { loadAll(); setInterval(loadAll, 30000); } });
 </script>
 </body>
 </html>
