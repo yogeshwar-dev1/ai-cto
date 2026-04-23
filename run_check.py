@@ -23,6 +23,41 @@ HEADERS = {
     "Prefer": "return=representation"
 }
 
+def send_push_notification(title: str, body: str, url: str = "https://ai-cto.onrender.com/dashboard.html"):
+    try:
+        # Get all saved push tokens from Supabase
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/push_tokens?select=token",
+            headers=HEADERS, timeout=10
+        )
+        tokens = res.json()
+        if not tokens:
+            print("No push tokens found")
+            return
+
+        messages = [
+            {
+                "to": t["token"],
+                "title": title,
+                "body": body,
+                "data": {"url": url},
+                "sound": "default",
+                "priority": "high",
+                "channelId": "default"
+            }
+            for t in tokens
+        ]
+
+        push_res = requests.post(
+            "https://exp.host/--/api/v2/push/send",
+            json=messages,
+            headers={"Content-Type": "application/json"},
+            timeout=15
+        )
+        print(f"📱 Push sent: {push_res.status_code}")
+    except Exception as e:
+        print(f"Push notification error: {e}")
+
 def send_email_alert(site_name, url, error, now):
     try:
         msg = MIMEText(f"""
@@ -107,6 +142,11 @@ def main():
             if incident:
                 resolve_incident(incident["id"])
                 send_message(f"✅ *SITE RECOVERED*\nSite: `{name}`\nTime: `{now}`")
+                send_push_notification(
+                    title="✅ Site Recovered",
+                    body=f"{name} is back online!",
+                    url=f"https://ai-cto.onrender.com/dashboard.html"
+                )
         else:
             error = result.get("error", f"HTTP {result.get('code')}")
             print(f"[{now}] ❌ {name} — {error}")
@@ -116,9 +156,19 @@ def main():
                 create_incident(url, error)
                 send_message(f"🚨 *SITE DOWN*\nSite: `{name}`\nError: `{error}`\nTime: `{now}`")
                 send_email_alert(name, url, error, now)
+                send_push_notification(
+                    title="🔴 Site Down!",
+                    body=f"{name} is down — AI is analyzing...",
+                    url=f"https://ai-cto.onrender.com/dashboard.html"
+                )
             fix = analyze_and_fix(error)
             fix_id = log_fix(url, error, fix)
             propose_fix(error, fix)
+            send_push_notification(
+                title="🔧 AI Fix Proposed",
+                body=f"{name}: {fix[:80]}...",
+                url=f"https://ai-cto.onrender.com/dashboard.html"
+            )
 
 if __name__ == "__main__":
     main()
