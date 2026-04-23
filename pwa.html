@@ -140,8 +140,27 @@
   <button class="btab active" data-tab="overview"><span class="icon">📊</span>Overview</button>
   <button class="btab" data-tab="manage"><span class="icon">🌐</span>Sites</button>
   <button class="btab" data-tab="logs"><span class="icon">📋</span>Logs</button>
+<button class="btab" data-tab="autofix"><span class="icon">🔧</span>Auto-Fix</button>
 </div>
+<!-- AUTO-FIX TAB -->
+<div class="tab-content" id="tab-autofix">
+  <div class="section-title">🤖 AI Auto-Fix Status</div>
 
+  <div class="card" style="margin-bottom:10px;">
+    <div class="card-top">
+      <div class="site-name">Auto-Fix Engine</div>
+      <span class="badge up" id="autofix-status">ACTIVE</span>
+    </div>
+    <div style="font-size:12px;color:#888;margin-top:6px;">AI monitors your sites and proposes fixes automatically when a site goes down.</div>
+  </div>
+
+  <div class="section-title">🚨 Active Incidents</div>
+  <div class="card" id="incidents-list"><div class="loading">Loading...</div></div>
+
+  <br>
+  <div class="section-title">🔧 Recent Auto-Fixes</div>
+  <div class="card" id="autofix-logs"><div class="loading">Loading...</div></div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -165,6 +184,7 @@
       document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
       if (tab.dataset.tab === "manage") loadSitesManager();
       if (tab.dataset.tab === "logs") { loadUptimeLogs(); loadFixLogs(); }
+if (tab.dataset.tab === "autofix") { loadAutoFix(); }
     });
   });
 
@@ -308,7 +328,49 @@
         <div class="log-meta">${new Date(l.created_at).toLocaleTimeString()}</div>
       </div>`).join("");
   }
+// Auto-Fix Tab
+  async function loadAutoFix() {
+    // Load incidents
+    const incEl = document.getElementById("incidents-list");
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/incidents?order=created_at.desc&limit=10`, { headers });
+      const incidents = await res.json();
+      if (!incidents.length) {
+        incEl.innerHTML = '<div class="loading">✅ No active incidents!</div>';
+      } else {
+        incEl.innerHTML = incidents.map(i => `
+          <div class="log-item">
+            <div class="log-site">${i.site_url}</div>
+            <div class="log-meta" style="color:${i.status === 'resolved' ? '#4ade80' : '#f87171'};">
+              ${i.status.toUpperCase()} — ${i.title}
+            </div>
+            <div class="log-meta">${new Date(i.created_at).toLocaleTimeString()}</div>
+          </div>`).join("");
+      }
+    } catch(e) {
+      incEl.innerHTML = '<div class="loading">Could not load incidents</div>';
+    }
 
+    // Load fix logs
+    const fixEl = document.getElementById("autofix-logs");
+    try {
+      const res2 = await fetch(`${SUPABASE_URL}/rest/v1/fix_logs?order=created_at.desc&limit=10`, { headers });
+      const fixes = await res2.json();
+      if (!fixes.length) {
+        fixEl.innerHTML = '<div class="loading">No fixes yet.</div>';
+      } else {
+        fixEl.innerHTML = fixes.map(f => `
+          <div class="log-item">
+            <div class="log-site">${f.site_url}</div>
+            <div class="log-meta" style="color:#f87171;">Error: ${f.error || '—'}</div>
+            <div class="log-meta" style="color:#4ade80;">Fix: ${f.fix || '—'}</div>
+            <div class="log-meta">${f.deployed ? '✅ Deployed' : '⏳ Pending'} — ${new Date(f.created_at).toLocaleTimeString()}</div>
+          </div>`).join("");
+      }
+    } catch(e) {
+      fixEl.innerHTML = '<div class="loading">Could not load fixes</div>';
+    }
+  }
   document.getElementById("refresh-btn").addEventListener("click", loadAll);
   loadAll();
   setInterval(loadAll, 30000);
