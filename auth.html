@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI CTO — Login</title>
+  <title>AI CTO – Login</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
@@ -85,8 +85,12 @@
     "Content-Type": "application/json"
   };
 
+  const isMobile = /Android|iPhone/i.test(navigator.userAgent);
+  const homeUrl = isMobile ? "pwa.html" : "dashboard.html";
+
   document.getElementById("google-btn").addEventListener("click", () => {
-    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent("https://ai-cto.onrender.com/dashboard.html")}`;
+    const redirectTo = isMobile ? "https://ai-cto.onrender.com/pwa.html" : "https://ai-cto.onrender.com/dashboard.html";
+    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
   });
 
   function showTab(tab) {
@@ -107,16 +111,27 @@
     const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value.trim();
     if (!email || !password) return showMsg("Please fill all fields", "error");
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}&password=eq.${encodeURIComponent(password)}`, { headers });
-    const data = await res.json();
-
-    if (data.length) {
-      localStorage.setItem("aicto_user", JSON.stringify(data[0]));
-      showMsg("Login successful! Redirecting...", "success");
-      setTimeout(() => window.location.href = "dashboard.html", 1000);
-    } else {
-      showMsg("Invalid email or password", "error");
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.access_token) {
+        const user = {
+          name: data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0],
+          email: data.user?.email,
+          id: data.user?.id
+        };
+        localStorage.setItem("aicto_user", JSON.stringify(user));
+        showMsg("Login successful! Redirecting...", "success");
+        setTimeout(() => window.location.href = homeUrl, 1000);
+      } else {
+        showMsg(data.error_description || "Invalid email or password", "error");
+      }
+    } catch(e) {
+      showMsg("Network error. Try again.", "error");
     }
   });
 
@@ -125,19 +140,21 @@
     const email = document.getElementById("signup-email").value.trim();
     const password = document.getElementById("signup-password").value.trim();
     if (!name || !email || !password) return showMsg("Please fill all fields", "error");
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-      method: "POST",
-      headers: { ...headers, "Prefer": "return=representation" },
-      body: JSON.stringify({ name, email, password })
-    });
-    const data = await res.json();
-
-    if (data && data[0]?.id) {
-      showMsg("Account created! Please login.", "success");
-      setTimeout(() => showTab("login"), 1500);
-    } else {
-      showMsg("Email already exists or error occurred", "error");
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, data: { full_name: name } })
+      });
+      const data = await res.json();
+      if (data.id || data.user?.id) {
+        showMsg("Account created! Please login.", "success");
+        setTimeout(() => showTab("login"), 1500);
+      } else {
+        showMsg(data.error_description || data.msg || "Error creating account", "error");
+      }
+    } catch(e) {
+      showMsg("Network error. Try again.", "error");
     }
   });
 </script>

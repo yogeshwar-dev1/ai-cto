@@ -16,17 +16,12 @@
     .overall { display: flex; align-items: center; gap: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 12px 16px; margin: 12px 16px; }
     .overall-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: #2a2a2a; }
     .overall-text { font-size: 13px; font-weight: 600; }
-
-    /* Bottom tabs */
     .bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #111; border-top: 1px solid #2a2a2a; display: flex; z-index: 100; }
     .btab { flex: 1; padding: 10px 4px; text-align: center; cursor: pointer; font-size: 10px; color: #888; border: none; background: none; }
     .btab .icon { font-size: 20px; display: block; margin-bottom: 2px; }
     .btab.active { color: #4ade80; }
-
-    /* Tab content */
     .tab-content { display: none; padding: 0 16px; }
     .tab-content.active { display: block; }
-
     .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
     .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .site-name { font-size: 14px; font-weight: 600; }
@@ -35,6 +30,8 @@
     .badge.down { background: #2e0d0d; color: #f87171; }
     .badge.paused { background: #2a2010; color: #facc15; }
     .badge.unknown { background: #2a2a2a; color: #888; }
+    .badge.resolved { background: #0d2e1a; color: #4ade80; }
+    .badge.investigating { background: #2e0d0d; color: #f87171; }
     .site-url { font-size: 11px; color: #888; margin-bottom: 10px; }
     .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
     .stat { background: #111; border-radius: 8px; padding: 8px 10px; }
@@ -47,16 +44,12 @@
     .bar.up { background: #4ade80; }
     .bar.down { background: #f87171; }
     .bar.unknown { background: #2a2a2a; }
-
-    /* Buttons */
     .btn { padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; border: none; font-weight: 600; }
     .btn-gray { background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; }
     .btn-red { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; }
     .btn-green { background: #0d2e1a; border: 1px solid #4ade80; color: #4ade80; }
     .btn-yellow { background: #2a2010; border: 1px solid #facc15; color: #facc15; }
     .btn-full { width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; margin-bottom: 10px; }
-
-    /* Add site form */
     .form-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
     .form-label { font-size: 11px; color: #888; margin-bottom: 4px; display: block; }
     .form-input { width: 100%; background: #111; border: 1px solid #2a2a2a; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 13px; outline: none; margin-bottom: 10px; }
@@ -64,8 +57,6 @@
     .form-input::placeholder { color: #555; }
     .btn-add { width: 100%; background: #4ade80; color: #000; font-weight: 700; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; }
     .btn-add:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
-
-    /* Site rows */
     .site-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #2a2a2a; gap: 10px; }
     .site-row:last-child { border-bottom: none; }
     .site-row-info { flex: 1; min-width: 0; }
@@ -75,17 +66,12 @@
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
     .dot.up { background: #4ade80; }
     .dot.paused { background: #facc15; }
-
-    /* Logs */
     .log-item { padding: 10px 0; border-bottom: 1px solid #1a1a1a; font-size: 12px; }
     .log-item:last-child { border-bottom: none; }
     .log-site { font-weight: 600; margin-bottom: 2px; }
-    .log-meta { color: #888; font-size: 11px; }
-
+    .log-meta { color: #888; font-size: 11px; margin-top: 2px; }
     .loading { color: #888; font-size: 13px; text-align: center; padding: 30px; }
     .section-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    /* Toast */
     .toast { position: fixed; bottom: 80px; left: 16px; right: 16px; max-width: 448px; margin: 0 auto; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 16px; font-size: 13px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; text-align: center; }
     .toast.show { opacity: 1; }
     .toast.success { border-color: #4ade80; color: #4ade80; }
@@ -95,7 +81,11 @@
 <body>
 
 <div class="topbar">
-  <h1>🤖 AI CTO</h1>
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h1>🤖 AI CTO</h1>
+    <button onclick="logout()" style="background:#2e0d0d;border:1px solid #f87171;color:#f87171;padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;">Logout</button>
+  </div>
+  <div style="font-size:12px;color:#4ade80;margin-top:2px;" id="user-name"></div>
   <div class="subtitle" id="last-updated">Loading...</div>
 </div>
 
@@ -135,32 +125,31 @@
   <div class="card" id="fix-logs"><div class="loading">Loading...</div></div>
 </div>
 
+<!-- AUTO-FIX TAB -->
+<div class="tab-content" id="tab-autofix">
+  <div class="section-title">🤖 AI Auto-Fix Status</div>
+  <div class="card" style="margin-bottom:10px;">
+    <div class="card-top">
+      <div class="site-name">Auto-Fix Engine</div>
+      <span class="badge up">ACTIVE</span>
+    </div>
+    <div style="font-size:12px;color:#888;margin-top:6px;">AI monitors your sites and proposes fixes automatically when a site goes down.</div>
+  </div>
+  <div class="section-title">🚨 Active Incidents</div>
+  <div class="card" id="incidents-list"><div class="loading">Loading...</div></div>
+  <br>
+  <div class="section-title">🔧 Recent Auto-Fixes</div>
+  <div class="card" id="autofix-logs"><div class="loading">Loading...</div></div>
+</div>
+
 <!-- Bottom tabs -->
 <div class="bottom-tabs">
   <button class="btab active" data-tab="overview"><span class="icon">📊</span>Overview</button>
   <button class="btab" data-tab="manage"><span class="icon">🌐</span>Sites</button>
   <button class="btab" data-tab="logs"><span class="icon">📋</span>Logs</button>
-<button class="btab" data-tab="autofix"><span class="icon">🔧</span>Auto-Fix</button>
+  <button class="btab" data-tab="autofix"><span class="icon">🔧</span>Auto-Fix</button>
 </div>
-<!-- AUTO-FIX TAB -->
-<div class="tab-content" id="tab-autofix">
-  <div class="section-title">🤖 AI Auto-Fix Status</div>
 
-  <div class="card" style="margin-bottom:10px;">
-    <div class="card-top">
-      <div class="site-name">Auto-Fix Engine</div>
-      <span class="badge up" id="autofix-status">ACTIVE</span>
-    </div>
-    <div style="font-size:12px;color:#888;margin-top:6px;">AI monitors your sites and proposes fixes automatically when a site goes down.</div>
-  </div>
-
-  <div class="section-title">🚨 Active Incidents</div>
-  <div class="card" id="incidents-list"><div class="loading">Loading...</div></div>
-
-  <br>
-  <div class="section-title">🔧 Recent Auto-Fixes</div>
-  <div class="card" id="autofix-logs"><div class="loading">Loading...</div></div>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -175,6 +164,45 @@
     setTimeout(() => t.className = "toast", 3000);
   }
 
+  // Auth
+  async function initAuth() {
+    const localUser = JSON.parse(localStorage.getItem("aicto_user") || "null");
+    if (localUser) {
+      document.getElementById("user-name").textContent = `Hi, ${localUser.name || localUser.email}!`;
+      return true;
+    }
+    const hash = window.location.hash;
+    let accessToken = null;
+    if (hash && hash.includes("access_token")) {
+      accessToken = new URLSearchParams(hash.slice(1)).get("access_token");
+    }
+    if (accessToken) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+          headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${accessToken}` }
+        });
+        const data = await res.json();
+        if (data && data.email) {
+          const user = {
+            name: data.user_metadata?.full_name || data.user_metadata?.name || data.email.split("@")[0],
+            email: data.email, id: data.id
+          };
+          localStorage.setItem("aicto_user", JSON.stringify(user));
+          window.history.replaceState({}, document.title, window.location.pathname);
+          document.getElementById("user-name").textContent = `Hi, ${user.name}!`;
+          return true;
+        }
+      } catch(e) {}
+    }
+    window.location.href = "auth.html";
+    return false;
+  }
+
+  function logout() {
+    localStorage.removeItem("aicto_user");
+    window.location.href = "auth.html";
+  }
+
   // Tabs
   document.querySelectorAll(".btab").forEach(tab => {
     tab.addEventListener("click", () => {
@@ -184,7 +212,7 @@
       document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
       if (tab.dataset.tab === "manage") loadSitesManager();
       if (tab.dataset.tab === "logs") { loadUptimeLogs(); loadFixLogs(); }
-if (tab.dataset.tab === "autofix") { loadAutoFix(); }
+      if (tab.dataset.tab === "autofix") { loadAutoFix(); }
     });
   });
 
@@ -328,9 +356,9 @@ if (tab.dataset.tab === "autofix") { loadAutoFix(); }
         <div class="log-meta">${new Date(l.created_at).toLocaleTimeString()}</div>
       </div>`).join("");
   }
-// Auto-Fix Tab
+
+  // Auto-Fix
   async function loadAutoFix() {
-    // Load incidents
     const incEl = document.getElementById("incidents-list");
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/incidents?order=created_at.desc&limit=10`, { headers });
@@ -341,9 +369,7 @@ if (tab.dataset.tab === "autofix") { loadAutoFix(); }
         incEl.innerHTML = incidents.map(i => `
           <div class="log-item">
             <div class="log-site">${i.site_url}</div>
-            <div class="log-meta" style="color:${i.status === 'resolved' ? '#4ade80' : '#f87171'};">
-              ${i.status.toUpperCase()} — ${i.title}
-            </div>
+            <div class="log-meta"><span class="badge ${i.status}" style="font-size:10px;">${i.status.toUpperCase()}</span> &nbsp; ${i.title}</div>
             <div class="log-meta">${new Date(i.created_at).toLocaleTimeString()}</div>
           </div>`).join("");
       }
@@ -351,7 +377,6 @@ if (tab.dataset.tab === "autofix") { loadAutoFix(); }
       incEl.innerHTML = '<div class="loading">Could not load incidents</div>';
     }
 
-    // Load fix logs
     const fixEl = document.getElementById("autofix-logs");
     try {
       const res2 = await fetch(`${SUPABASE_URL}/rest/v1/fix_logs?order=created_at.desc&limit=10`, { headers });
@@ -371,9 +396,9 @@ if (tab.dataset.tab === "autofix") { loadAutoFix(); }
       fixEl.innerHTML = '<div class="loading">Could not load fixes</div>';
     }
   }
+
   document.getElementById("refresh-btn").addEventListener("click", loadAll);
-  loadAll();
-  setInterval(loadAll, 30000);
+  initAuth().then(ok => { if (ok) { loadAll(); setInterval(loadAll, 30000); } });
 </script>
 </body>
 </html>
