@@ -3,62 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>System Status</title>
+  <title>Status Page</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f9fafb; color: #111; padding: 40px 24px; max-width: 720px; margin: 0 auto; }
-    h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-    .subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
-    .overall { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; margin-bottom: 32px; }
-    .overall-dot { width: 14px; height: 14px; border-radius: 50%; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; min-height: 100vh; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid #2a2a2a; }
+    .logo { font-size: 18px; font-weight: 700; }
+    .powered { font-size: 12px; color: #888; }
+    .powered a { color: #4ade80; text-decoration: none; }
+    .hero { text-align: center; padding: 60px 24px 40px; }
+    .hero h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .hero p { color: #888; font-size: 15px; }
+    .overall { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 24px auto; max-width: 600px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px 24px; }
+    .overall-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
     .overall-text { font-size: 16px; font-weight: 600; }
-    .section-title { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-    .site-row { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .site-info { display: flex; flex-direction: column; gap: 3px; }
-    .site-name { font-weight: 600; font-size: 15px; }
-    .site-url { font-size: 12px; color: #888; }
-    .site-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .container { max-width: 700px; margin: 0 auto; padding: 0 24px 80px; }
+    .section-title { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; margin-top: 32px; }
+    .site-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; }
+    .site-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .site-name { font-size: 15px; font-weight: 600; }
+    .site-url { font-size: 12px; color: #888; margin-bottom: 10px; }
     .badge { font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
-    .badge.up, .badge.operational { background: #dcfce7; color: #16a34a; }
-    .badge.down, .badge.outage { background: #fee2e2; color: #dc2626; }
-    .badge.investigating { background: #fef9c3; color: #ca8a04; }
-    .badge.resolved { background: #dcfce7; color: #16a34a; }
-    .badge.unknown { background: #f3f4f6; color: #888; }
-    .uptime-text { font-size: 12px; color: #888; }
-    .bar-wrap { display: flex; gap: 2px; margin-top: 8px; }
-    .bar { width: 8px; height: 28px; border-radius: 3px; }
+    .badge.up { background: #0d2e1a; color: #4ade80; }
+    .badge.down { background: #2e0d0d; color: #f87171; }
+    .badge.unknown { background: #2a2a2a; color: #888; }
+    .bar-wrap { display: flex; gap: 2px; margin-bottom: 6px; }
+    .bar { flex: 1; height: 28px; border-radius: 3px; cursor: pointer; transition: opacity 0.2s; }
+    .bar:hover { opacity: 0.8; }
     .bar.up { background: #4ade80; }
     .bar.down { background: #f87171; }
-    .bar.unknown { background: #e5e7eb; }
-    .incident-card { background: #fff; border: 1px solid #e5e7eb; border-left: 4px solid #f87171; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
-    .incident-card.resolved { border-left-color: #4ade80; }
-    .incident-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
-    .incident-desc { font-size: 13px; color: #666; margin-bottom: 8px; }
-    .incident-meta { font-size: 12px; color: #aaa; display: flex; gap: 16px; }
-    .footer { text-align: center; color: #aaa; font-size: 12px; margin-top: 40px; }
-    .green { color: #16a34a; }
-    .red { color: #dc2626; }
-    .mb32 { margin-bottom: 32px; }
+    .bar.unknown { background: #2a2a2a; }
+    .bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: #888; }
+    .uptime-pct { font-size: 12px; color: #4ade80; font-weight: 600; }
+    .incident-card { background: #2e0d0d; border: 1px solid #f87171; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; }
+    .incident-title { font-size: 14px; font-weight: 600; color: #f87171; margin-bottom: 4px; }
+    .incident-meta { font-size: 12px; color: #888; }
+    .loading { color: #888; font-size: 14px; text-align: center; padding: 40px; }
+    .last-updated { text-align: center; font-size: 12px; color: #888; margin-top: 24px; }
+    .not-found { text-align: center; padding: 80px 24px; }
+    .not-found h2 { font-size: 24px; margin-bottom: 12px; }
+    .not-found p { color: #888; margin-bottom: 24px; }
+    .btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; border: none; background: #4ade80; color: #000; font-weight: 600; text-decoration: none; }
   </style>
 </head>
 <body>
 
-<h1>⚡ System Status</h1>
-<div class="subtitle" id="last-updated">Checking systems...</div>
+<nav>
+  <div class="logo" id="page-title">🤖 Status Page</div>
+  <div class="powered">Powered by <a href="https://ai-cto.onrender.com">AI CTO</a></div>
+</nav>
 
-<div class="overall" id="overall-status">
-  <div class="overall-dot" id="overall-dot" style="background:#e5e7eb;"></div>
-  <div class="overall-text" id="overall-text">Checking all systems...</div>
-</div>
-
-<div class="section-title">Services</div>
-<div id="sites-list" class="mb32"></div>
-
-<div class="section-title">Incident History</div>
-<div id="incidents-list"></div>
-
-<div class="footer">
-  Last updated: <span id="footer-time">—</span> · Refreshes every 60 seconds
+<div id="main-content">
+  <div class="loading">Loading status page...</div>
 </div>
 
 <script>
@@ -70,99 +66,174 @@
     "Authorization": `Bearer ${SUPABASE_KEY}`
   };
 
-  async function fetchSites() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?active=eq.true`, { headers });
+  // Get username from URL
+  // Supports: /status.html?u=username OR /status/username
+  function getUsername() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("u")) return params.get("u");
+    const path = window.location.pathname;
+    const match = path.match(/\/status\/(.+)/);
+    if (match) return match[1];
+    return null;
+  }
+
+  async function getUserByUsername(username) {
+    // First try exact email match
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/users_meta?or=(email.ilike.*${username}*,name.ilike.*${username}*)&limit=1`,
+      { headers }
+    );
+    const data = await res.json();
+    return data && data.length ? data[0] : null;
+  }
+
+  async function fetchSites(userId) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/sites?user_id=eq.${userId}&active=eq.true&order=created_at.asc`,
+      { headers }
+    );
     return res.json();
   }
 
-  async function fetchStats(siteUrl) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=30`, { headers });
-    const logs = await res.json();
-    if (!logs.length) return { uptime: 100, status: "unknown", history: [] };
-    const total = logs.length;
-    const up = logs.filter(l => l.status === "up").length;
-    return {
-      uptime: Math.round((up / total) * 100),
-      status: logs[0]?.status || "unknown",
-      history: logs.slice(0, 30).reverse()
-    };
-  }
-
-  async function fetchIncidents() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/incidents?order=created_at.desc&limit=10`, { headers });
+  async function fetchHistory(siteUrl) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=90`,
+      { headers }
+    );
     return res.json();
   }
 
-  async function loadStatus() {
-    const sites = await fetchSites();
-    const list = document.getElementById("sites-list");
-    list.innerHTML = "";
+  async function fetchIncidents(userId) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/incidents?status=neq.resolved&order=created_at.desc&limit=5`,
+      { headers }
+    );
+    return res.json();
+  }
 
+  function renderBars(logs) {
+    if (!logs.length) return '<div style="color:#888;font-size:12px;">No data yet</div>';
+    const reversed = [...logs].reverse();
+    return reversed.map(l => `
+      <div class="bar ${l.status}" title="${new Date(l.checked_at).toLocaleString()} — ${l.status}"></div>
+    `).join("");
+  }
+
+  async function loadPage() {
+    const username = getUsername();
+    const main = document.getElementById("main-content");
+
+    if (!username) {
+      main.innerHTML = `
+        <div class="not-found">
+          <h2>👋 Welcome to AI CTO Status</h2>
+          <p>Visit your personal status page at:</p>
+          <p style="color:#4ade80;font-size:16px;margin:16px 0;">status.html?u=yourusername</p>
+          <a href="auth.html" class="btn">Create Free Account</a>
+        </div>`;
+      return;
+    }
+
+    // Find user
+    const user = await getUserByUsername(username);
+    if (!user) {
+      main.innerHTML = `
+        <div class="not-found">
+          <h2>😕 Status page not found</h2>
+          <p>No user found for "<strong>${username}</strong>"</p>
+          <br>
+          <a href="auth.html" class="btn">Create Your Own</a>
+        </div>`;
+      return;
+    }
+
+    document.getElementById("page-title").textContent = `🤖 ${user.name}'s Status`;
+    document.title = `${user.name} — Status Page`;
+
+    const sites = await fetchSites(user.id);
+    const incidents = await fetchIncidents(user.id);
+
+    if (!sites.length) {
+      main.innerHTML = `
+        <div class="hero">
+          <h1>${user.name}'s Status Page</h1>
+          <p>No sites being monitored yet.</p>
+        </div>`;
+      return;
+    }
+
+    // Check overall status
     let allUp = true;
     let anyDown = false;
+    const siteData = [];
 
     for (const site of sites) {
-      const stats = await fetchStats(site.url);
-      if (stats.status === "down") { allUp = false; anyDown = true; }
-      if (stats.status === "unknown") allUp = false;
+      const logs = await fetchHistory(site.url);
+      const total = logs.length;
+      const up = logs.filter(l => l.status === "up").length;
+      const uptime = total ? Math.round((up / total) * 100) : 100;
+      const status = logs.length ? logs[0].status : "unknown";
+      if (status === "down") { allUp = false; anyDown = true; }
+      if (status !== "up") allUp = false;
+      siteData.push({ site, logs, uptime, status });
+    }
 
-      const bars = stats.history.map(l =>
-        `<div class="bar ${l.status}" title="${new Date(l.checked_at).toLocaleString()}: ${l.status}"></div>`
-      ).join("");
+    const overallColor = anyDown ? "#f87171" : "#4ade80";
+    const overallText = anyDown ? "Some systems are experiencing issues" : "All systems operational";
 
-      list.innerHTML += `
-        <div class="site-row">
-          <div class="site-info">
+    let html = `
+      <div class="hero">
+        <h1>${user.name}'s Status Page</h1>
+        <p>Real-time monitoring powered by AI CTO</p>
+      </div>
+
+      <div class="container">
+        <div class="overall">
+          <div class="overall-dot" style="background:${overallColor};"></div>
+          <div class="overall-text" style="color:${overallColor};">${overallText}</div>
+        </div>
+    `;
+
+    // Active incidents
+    if (incidents && incidents.length) {
+      html += `<div class="section-title">🚨 Active Incidents</div>`;
+      incidents.forEach(i => {
+        html += `
+          <div class="incident-card">
+            <div class="incident-title">${i.title}</div>
+            <div class="incident-meta">${i.description || ""} · ${new Date(i.created_at).toLocaleString()}</div>
+          </div>`;
+      });
+    }
+
+    // Sites
+    html += `<div class="section-title">🌐 Systems</div>`;
+    siteData.forEach(({ site, logs, uptime, status }) => {
+      html += `
+        <div class="site-card">
+          <div class="site-top">
             <div class="site-name">${site.name}</div>
-            <div class="site-url">${site.url}</div>
-            <div class="bar-wrap">${bars || '<div style="color:#aaa;font-size:12px;">No history yet</div>'}</div>
+            <span class="badge ${status}">${status === "up" ? "✓ Operational" : status === "down" ? "✗ Down" : "? Unknown"}</span>
           </div>
-          <div class="site-right">
-            <span class="badge ${stats.status}">${stats.status === "up" ? "Operational" : stats.status === "down" ? "Outage" : "Unknown"}</span>
-            <div class="uptime-text">${stats.uptime}% uptime</div>
+          <div class="site-url">${site.url}</div>
+          <div class="bar-wrap">${renderBars(logs)}</div>
+          <div class="bar-labels">
+            <span>90 days ago</span>
+            <span class="uptime-pct">${uptime}% uptime</span>
+            <span>Today</span>
           </div>
         </div>`;
-    }
+    });
 
-    const dot = document.getElementById("overall-dot");
-    const text = document.getElementById("overall-text");
-    if (anyDown) {
-      dot.style.background = "#f87171";
-      text.innerHTML = '<span class="red">Some Systems Are Down</span>';
-    } else if (allUp) {
-      dot.style.background = "#4ade80";
-      text.innerHTML = '<span class="green">All Systems Operational</span>';
-    } else {
-      dot.style.background = "#facc15";
-      text.innerHTML = "Checking systems...";
-    }
+    html += `
+        <div class="last-updated">Last updated: ${new Date().toLocaleTimeString()} · Auto-refreshes every 30s</div>
+      </div>`;
 
-    const incidents = await fetchIncidents();
-    const ilist = document.getElementById("incidents-list");
-    if (!incidents.length) {
-      ilist.innerHTML = '<div class="site-row" style="color:#888;">No incidents recorded. 🎉</div>';
-    } else {
-      ilist.innerHTML = incidents.map(i => `
-        <div class="incident-card ${i.status === 'resolved' ? 'resolved' : ''}">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <div class="incident-title">${i.title}</div>
-            <span class="badge ${i.status}">${i.status}</span>
-          </div>
-          <div class="incident-desc">${i.description || "No details provided"}</div>
-          <div class="incident-meta">
-            <span>🕐 Started: ${new Date(i.started_at).toLocaleString()}</span>
-            ${i.resolved_at ? `<span>✅ Resolved: ${new Date(i.resolved_at).toLocaleString()}</span>` : ""}
-          </div>
-        </div>`).join("");
-    }
-
-    const now = new Date().toLocaleTimeString();
-    document.getElementById("last-updated").textContent = "Last checked: " + now;
-    document.getElementById("footer-time").textContent = now;
+    main.innerHTML = html;
+    setTimeout(loadPage, 30000);
   }
 
-  loadStatus();
-  setInterval(loadStatus, 60000);
+  loadPage();
 </script>
 </body>
 </html>
