@@ -7,21 +7,33 @@
   <meta name="theme-color" content="#0f0f0f">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="AI CTO">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; padding: 16px; max-width: 480px; margin: 0 auto; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; max-width: 480px; margin: 0 auto; padding-bottom: 70px; }
+    .topbar { padding: 16px 16px 8px; }
     h1 { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
-    .subtitle { color: #888; font-size: 12px; margin-bottom: 20px; }
-    .overall { display: flex; align-items: center; gap: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
-    .overall-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-    .overall-text { font-size: 14px; font-weight: 600; }
+    .subtitle { color: #888; font-size: 12px; }
+    .overall { display: flex; align-items: center; gap: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 12px 16px; margin: 12px 16px; }
+    .overall-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: #2a2a2a; }
+    .overall-text { font-size: 13px; font-weight: 600; }
+
+    /* Bottom tabs */
+    .bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #111; border-top: 1px solid #2a2a2a; display: flex; z-index: 100; }
+    .btab { flex: 1; padding: 10px 4px; text-align: center; cursor: pointer; font-size: 10px; color: #888; border: none; background: none; }
+    .btab .icon { font-size: 20px; display: block; margin-bottom: 2px; }
+    .btab.active { color: #4ade80; }
+
+    /* Tab content */
+    .tab-content { display: none; padding: 0 16px; }
+    .tab-content.active { display: block; }
+
     .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
-    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .site-name { font-size: 14px; font-weight: 600; }
     .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
     .badge.up { background: #0d2e1a; color: #4ade80; }
     .badge.down { background: #2e0d0d; color: #f87171; }
+    .badge.paused { background: #2a2010; color: #facc15; }
     .badge.unknown { background: #2a2a2a; color: #888; }
     .site-url { font-size: 11px; color: #888; margin-bottom: 10px; }
     .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
@@ -30,58 +42,133 @@
     .stat-lbl { font-size: 10px; color: #888; margin-top: 1px; }
     .green { color: #4ade80; }
     .red { color: #f87171; }
-    .refresh-btn { width: 100%; background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; margin-bottom: 16px; }
-    .refresh-btn:active { background: #2a2a2a; }
-    .install-btn { width: 100%; background: #4ade80; border: none; color: #000; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 700; margin-bottom: 16px; display: none; }
-    .loading { color: #888; font-size: 13px; text-align: center; padding: 30px; }
     .bar-wrap { display: flex; gap: 2px; margin-top: 8px; }
-    .bar { flex: 1; height: 20px; border-radius: 2px; }
+    .bar { flex: 1; height: 16px; border-radius: 2px; }
     .bar.up { background: #4ade80; }
     .bar.down { background: #f87171; }
     .bar.unknown { background: #2a2a2a; }
+
+    /* Buttons */
+    .btn { padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; border: none; font-weight: 600; }
+    .btn-gray { background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; }
+    .btn-red { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; }
+    .btn-green { background: #0d2e1a; border: 1px solid #4ade80; color: #4ade80; }
+    .btn-yellow { background: #2a2010; border: 1px solid #facc15; color: #facc15; }
+    .btn-full { width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; margin-bottom: 10px; }
+
+    /* Add site form */
+    .form-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .form-label { font-size: 11px; color: #888; margin-bottom: 4px; display: block; }
+    .form-input { width: 100%; background: #111; border: 1px solid #2a2a2a; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 13px; outline: none; margin-bottom: 10px; }
+    .form-input:focus { border-color: #4ade80; }
+    .form-input::placeholder { color: #555; }
+    .btn-add { width: 100%; background: #4ade80; color: #000; font-weight: 700; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; }
+    .btn-add:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+
+    /* Site rows */
+    .site-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #2a2a2a; gap: 10px; }
+    .site-row:last-child { border-bottom: none; }
+    .site-row-info { flex: 1; min-width: 0; }
+    .site-row-info .name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .site-row-info .url { font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .site-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    .dot.up { background: #4ade80; }
+    .dot.paused { background: #facc15; }
+
+    /* Logs */
+    .log-item { padding: 10px 0; border-bottom: 1px solid #1a1a1a; font-size: 12px; }
+    .log-item:last-child { border-bottom: none; }
+    .log-site { font-weight: 600; margin-bottom: 2px; }
+    .log-meta { color: #888; font-size: 11px; }
+
+    .loading { color: #888; font-size: 13px; text-align: center; padding: 30px; }
+    .section-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 80px; left: 16px; right: 16px; max-width: 448px; margin: 0 auto; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 16px; font-size: 13px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; text-align: center; }
+    .toast.show { opacity: 1; }
+    .toast.success { border-color: #4ade80; color: #4ade80; }
+    .toast.error { border-color: #f87171; color: #f87171; }
   </style>
 </head>
 <body>
 
-<button class="install-btn" id="install-btn">📲 Install App</button>
+<div class="topbar">
+  <h1>🤖 AI CTO</h1>
+  <div class="subtitle" id="last-updated">Loading...</div>
+</div>
 
-<h1>🤖 AI CTO</h1>
-<div class="subtitle" id="last-updated">Loading...</div>
-
-<div class="overall" id="overall">
-  <div class="overall-dot" id="overall-dot" style="background:#2a2a2a;"></div>
+<div class="overall">
+  <div class="overall-dot" id="overall-dot"></div>
   <div class="overall-text" id="overall-text">Checking systems...</div>
 </div>
 
-<button class="refresh-btn" id="refresh-btn">↻ Refresh</button>
+<!-- OVERVIEW TAB -->
+<div class="tab-content active" id="tab-overview">
+  <button class="btn btn-gray btn-full" id="refresh-btn">↻ Refresh</button>
+  <div id="sites-list"><div class="loading">Loading sites...</div></div>
+</div>
 
-<div id="sites-list"><div class="loading">Loading sites...</div></div>
+<!-- MANAGE TAB -->
+<div class="tab-content" id="tab-manage">
+  <div class="form-card">
+    <div class="section-title">➕ Add New Site</div>
+    <label class="form-label">Site Name</label>
+    <input class="form-input" id="input-name" type="text" placeholder="My Website" />
+    <label class="form-label">Site URL</label>
+    <input class="form-input" id="input-url" type="text" placeholder="https://example.com" />
+    <button class="btn-add" id="btn-add-site">Add Site</button>
+  </div>
+  <div class="section-title">🌐 All Sites</div>
+  <div class="card" id="sites-manager-list">
+    <div class="loading">Loading...</div>
+  </div>
+</div>
+
+<!-- LOGS TAB -->
+<div class="tab-content" id="tab-logs">
+  <div class="section-title">📋 Recent Checks</div>
+  <div class="card" id="uptime-logs"><div class="loading">Loading...</div></div>
+  <br>
+  <div class="section-title">🔧 Fix History</div>
+  <div class="card" id="fix-logs"><div class="loading">Loading...</div></div>
+</div>
+
+<!-- Bottom tabs -->
+<div class="bottom-tabs">
+  <button class="btab active" data-tab="overview"><span class="icon">📊</span>Overview</button>
+  <button class="btab" data-tab="manage"><span class="icon">🌐</span>Sites</button>
+  <button class="btab" data-tab="logs"><span class="icon">📋</span>Logs</button>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
   const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+  const headers = { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" };
 
-  const headers = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": `Bearer ${SUPABASE_KEY}`
-  };
+  function showToast(msg, type = "success") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = `toast show ${type}`;
+    setTimeout(() => t.className = "toast", 3000);
+  }
 
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('install-btn').style.display = 'block';
+  // Tabs
+  document.querySelectorAll(".btab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".btab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+      if (tab.dataset.tab === "manage") loadSitesManager();
+      if (tab.dataset.tab === "logs") { loadUptimeLogs(); loadFixLogs(); }
+    });
   });
 
-  document.getElementById('install-btn').addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      document.getElementById('install-btn').style.display = 'none';
-    }
-  });
-
+  // Overview
   async function fetchStats(siteUrl) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=20`, { headers });
     const logs = await res.json();
@@ -96,22 +183,17 @@
   async function loadAll() {
     document.getElementById("last-updated").textContent = "Refreshing...";
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?active=eq.true`, { headers });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?order=created_at.desc`, { headers });
       const sites = await res.json();
       const list = document.getElementById("sites-list");
+      if (!sites.length) { list.innerHTML = '<div class="loading">No sites yet. Add one in Sites tab!</div>'; return; }
       list.innerHTML = "";
-
       let allUp = true, anyDown = false;
-
       for (const site of sites) {
-        const stats = await fetchStats(site.url);
+        const stats = site.active ? await fetchStats(site.url) : { uptime: 0, avg: 0, status: "paused", history: [] };
         if (stats.status === "down") { allUp = false; anyDown = true; }
         if (stats.status !== "up") allUp = false;
-
-        const bars = stats.history.map(l =>
-          `<div class="bar ${l.status}" title="${l.status}"></div>`
-        ).join("");
-
+        const bars = stats.history.map(l => `<div class="bar ${l.status}"></div>`).join("");
         list.innerHTML += `
           <div class="card">
             <div class="card-top">
@@ -120,33 +202,111 @@
             </div>
             <div class="site-url">${site.url}</div>
             <div class="stats">
-              <div class="stat">
-                <div class="stat-val ${stats.uptime >= 90 ? 'green' : 'red'}">${stats.uptime}%</div>
-                <div class="stat-lbl">Uptime</div>
-              </div>
-              <div class="stat">
-                <div class="stat-val">${stats.avg}ms</div>
-                <div class="stat-lbl">Avg Speed</div>
-              </div>
-              <div class="stat">
-                <div class="stat-val">${stats.history.length}</div>
-                <div class="stat-lbl">Checks</div>
-              </div>
+              <div class="stat"><div class="stat-val ${stats.uptime >= 90 ? 'green' : 'red'}">${stats.uptime}%</div><div class="stat-lbl">Uptime</div></div>
+              <div class="stat"><div class="stat-val">${stats.avg}ms</div><div class="stat-lbl">Speed</div></div>
+              <div class="stat"><div class="stat-val">${stats.history.length}</div><div class="stat-lbl">Checks</div></div>
             </div>
             <div class="bar-wrap">${bars}</div>
           </div>`;
       }
-
       const dot = document.getElementById("overall-dot");
       const text = document.getElementById("overall-text");
       if (anyDown) { dot.style.background = "#f87171"; text.innerHTML = '<span class="red">Some Systems Down</span>'; }
       else if (allUp) { dot.style.background = "#4ade80"; text.innerHTML = '<span class="green">All Systems Operational</span>'; }
-
+      else { dot.style.background = "#facc15"; text.textContent = "Checking..."; }
       document.getElementById("last-updated").textContent = "Updated: " + new Date().toLocaleTimeString();
     } catch(e) {
-      console.error("Load error:", e);
-      document.getElementById("last-updated").textContent = "Error loading data";
+      document.getElementById("last-updated").textContent = "Error loading";
     }
+  }
+
+  // Manage Sites
+  async function loadSitesManager() {
+    const el = document.getElementById("sites-manager-list");
+    el.innerHTML = '<div class="loading">Loading...</div>';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?order=created_at.desc`, { headers });
+    const sites = await res.json();
+    if (!sites.length) { el.innerHTML = '<div class="loading">No sites yet.</div>'; return; }
+    el.innerHTML = sites.map(site => `
+      <div class="site-row">
+        <div class="site-row-info">
+          <div class="name"><span class="dot ${site.active ? 'up' : 'paused'}"></span>${site.name}</div>
+          <div class="url">${site.url}</div>
+        </div>
+        <div class="site-row-actions">
+          <button class="btn ${site.active ? 'btn-yellow' : 'btn-green'}" onclick="toggleSite('${site.id}', ${site.active})">
+            ${site.active ? '⏸' : '▶'}
+          </button>
+          <button class="btn btn-red" onclick="removeSite('${site.id}', '${site.name}')">🗑</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function addSite() {
+    const name = document.getElementById("input-name").value.trim();
+    const url = document.getElementById("input-url").value.trim();
+    if (!name || !url) { showToast("Fill in both fields", "error"); return; }
+    if (!url.startsWith("http")) { showToast("URL must start with https://", "error"); return; }
+    const btn = document.getElementById("btn-add-site");
+    btn.disabled = true; btn.textContent = "Adding...";
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites`, {
+      method: "POST",
+      headers: { ...headers, "Prefer": "return=minimal" },
+      body: JSON.stringify({ name, url, active: true })
+    });
+    if (res.ok || res.status === 201) {
+      showToast(`✅ ${name} added!`);
+      document.getElementById("input-name").value = "";
+      document.getElementById("input-url").value = "";
+      loadSitesManager(); loadAll();
+    } else { showToast("Error adding site", "error"); }
+    btn.disabled = false; btn.textContent = "Add Site";
+  }
+
+  async function toggleSite(id, currentActive) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, {
+      method: "PATCH", headers: { ...headers, "Prefer": "return=minimal" },
+      body: JSON.stringify({ active: !currentActive })
+    });
+    if (res.ok) { showToast(!currentActive ? "▶ Resumed" : "⏸ Paused"); loadSitesManager(); loadAll(); }
+    else showToast("Failed to update", "error");
+  }
+
+  async function removeSite(id, name) {
+    if (!confirm(`Remove "${name}"?`)) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, { method: "DELETE", headers });
+    if (res.ok) { showToast(`🗑 ${name} removed`); loadSitesManager(); loadAll(); }
+    else showToast("Failed to remove", "error");
+  }
+
+  document.getElementById("btn-add-site").addEventListener("click", addSite);
+
+  // Logs
+  async function loadUptimeLogs() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=15`, { headers });
+    const logs = await res.json();
+    const el = document.getElementById("uptime-logs");
+    if (!logs.length) { el.innerHTML = '<div class="loading">No logs yet.</div>'; return; }
+    el.innerHTML = logs.map(l => `
+      <div class="log-item">
+        <div class="log-site">${l.site_url}</div>
+        <div class="log-meta"><span class="badge ${l.status}" style="font-size:10px;">${l.status.toUpperCase()}</span> &nbsp; ${l.response_time ? l.response_time+'ms' : '—'} &nbsp; ${new Date(l.checked_at).toLocaleTimeString()}</div>
+      </div>`).join("");
+  }
+
+  async function loadFixLogs() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/fix_logs?order=created_at.desc&limit=10`, { headers });
+    const logs = await res.json();
+    const el = document.getElementById("fix-logs");
+    if (!logs.length) { el.innerHTML = '<div class="loading">No fixes yet.</div>'; return; }
+    el.innerHTML = logs.map(l => `
+      <div class="log-item">
+        <div class="log-site">${l.site_url}</div>
+        <div class="log-meta" style="color:#f87171;">${l.error || '—'}</div>
+        <div class="log-meta" style="color:#4ade80;">${l.fix || '—'}</div>
+        <div class="log-meta">${new Date(l.created_at).toLocaleTimeString()}</div>
+      </div>`).join("");
   }
 
   document.getElementById("refresh-btn").addEventListener("click", loadAll);
