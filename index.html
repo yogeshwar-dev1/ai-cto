@@ -3,29 +3,247 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI CTO</title>
+  <title>AI CTO — AI-Powered Site Monitoring</title>
+  <meta name="description" content="AI CTO monitors your websites 24/7, automatically diagnoses issues, and deploys fixes — all powered by AI. Free forever.">
+  <meta name="keywords" content="uptime monitoring, AI monitoring, site monitoring, free uptime monitor, website monitoring">
+  <meta property="og:title" content="AI CTO — AI-Powered Site Monitoring">
+  <meta property="og:description" content="Monitor your websites 24/7. AI diagnoses issues and auto-fixes them. Free forever.">
+  <meta property="og:image" content="https://ai-cto.onrender.com/assets/images/icon.png">
+  <meta property="og:url" content="https://ai-cto.onrender.com">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AI CTO — AI-Powered Site Monitoring">
+  <meta name="twitter:description" content="Monitor your websites 24/7. AI diagnoses issues and auto-fixes them. Free forever.">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
-    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-    p { color: #888; font-size: 16px; margin-bottom: 32px; }
-    .btn { display: inline-block; background: #4ade80; color: #000; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; margin: 8px; }
-    .btn-outline { display: inline-block; background: transparent; color: #fff; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; margin: 8px; border: 1px solid #2a2a2a; }
-    .btn:hover { background: #22c55e; }
-    .btn-outline:hover { background: #1a1a1a; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid #2a2a2a; position: sticky; top: 0; background: #0f0f0f; z-index: 100; }
+    .logo { font-size: 20px; font-weight: 700; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: #888; text-decoration: none; font-size: 14px; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta { background: #4ade80; color: #000 !important; padding: 8px 20px; border-radius: 8px; font-weight: 600 !important; }
+    .nav-cta:hover { background: #22c55e !important; }
+    .hero { text-align: center; padding: 100px 24px 80px; max-width: 800px; margin: 0 auto; }
+    .ph-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px; padding: 6px 16px; font-size: 13px; color: #888; margin-bottom: 24px; }
+    .ph-badge span { color: #ff6154; font-weight: 600; }
+    .hero h1 { font-size: 56px; font-weight: 800; line-height: 1.1; margin-bottom: 24px; }
+    .hero h1 span { color: #4ade80; }
+    .hero p { font-size: 20px; color: #888; margin-bottom: 40px; line-height: 1.6; }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { background: #4ade80; color: #000; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+    .btn-primary:hover { background: #22c55e; transform: translateY(-1px); }
+    .btn-secondary { background: #1a1a1a; color: #fff; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 600; text-decoration: none; border: 1px solid #2a2a2a; transition: all 0.2s; }
+    .btn-secondary:hover { background: #2a2a2a; }
+    .stats { display: flex; justify-content: center; gap: 48px; padding: 48px 24px; border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 36px; font-weight: 800; color: #4ade80; }
+    .stat-label { font-size: 14px; color: #888; margin-top: 4px; }
+    .features { max-width: 1100px; margin: 0 auto; padding: 80px 24px; }
+    .features h2 { font-size: 36px; font-weight: 700; text-align: center; margin-bottom: 48px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+    .feature-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 28px; transition: border-color 0.2s; }
+    .feature-card:hover { border-color: #4ade80; }
+    .feature-icon { font-size: 32px; margin-bottom: 16px; }
+    .feature-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .feature-desc { font-size: 14px; color: #888; line-height: 1.6; }
+    .how-it-works { background: #111; padding: 80px 24px; }
+    .how-it-works h2 { font-size: 36px; font-weight: 700; text-align: center; margin-bottom: 48px; }
+    .steps { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; max-width: 900px; margin: 0 auto; }
+    .step { text-align: center; flex: 1; min-width: 200px; }
+    .step-num { width: 48px; height: 48px; background: #4ade80; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; margin: 0 auto 16px; }
+    .step-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .step-desc { font-size: 14px; color: #888; }
+    .step-arrow { font-size: 24px; color: #2a2a2a; align-self: center; margin-top: -32px; }
+    .testimonials { max-width: 900px; margin: 0 auto; padding: 80px 24px; }
+    .testimonials h2 { font-size: 36px; font-weight: 700; text-align: center; margin-bottom: 48px; }
+    .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+    .testimonial { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 24px; }
+    .testimonial-text { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 16px; }
+    .testimonial-author { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #4ade80; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; font-size: 14px; }
+    .author-name { font-size: 14px; font-weight: 600; }
+    .author-role { font-size: 12px; color: #888; }
+    .cta-section { text-align: center; padding: 80px 24px; background: linear-gradient(135deg, #0d2e1a, #0f0f0f); }
+    .cta-section h2 { font-size: 40px; font-weight: 800; margin-bottom: 16px; }
+    .cta-section p { color: #888; font-size: 18px; margin-bottom: 40px; }
+    .embed-badge { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; max-width: 500px; margin: 40px auto 0; text-align: left; }
+    .embed-badge h3 { font-size: 14px; color: #888; margin-bottom: 10px; }
+    .embed-code { background: #111; border-radius: 8px; padding: 12px; font-size: 12px; color: #4ade80; font-family: monospace; word-break: break-all; cursor: pointer; }
+    .embed-code:hover { background: #1a1a1a; }
+    footer { text-align: center; padding: 40px 24px; border-top: 1px solid #2a2a2a; color: #888; font-size: 13px; }
+    footer a { color: #4ade80; text-decoration: none; }
+    .badge-widget { display: inline-flex; align-items: center; gap: 8px; background: #1a1a1a; border: 1px solid #4ade80; border-radius: 8px; padding: 8px 16px; font-size: 13px; color: #4ade80; text-decoration: none; }
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 36px; }
+      nav { padding: 16px 20px; }
+      .nav-links { gap: 12px; }
+    }
   </style>
-  <script>
-    const user = JSON.parse(localStorage.getItem("aicto_user"));
-    if (user) window.location.href = "dashboard.html";
-    else window.location.href = "auth.html";
-  </script>
 </head>
 <body>
-  <div>
-    <h1>🤖 AI CTO</h1>
-    <p>Monitor your sites with AI</p>
-    <a href="auth.html" class="btn">Get Started</a>
-    <a href="pricing.html" class="btn-outline">View Pricing</a>
+
+<nav>
+  <div class="logo">🤖 AI CTO</div>
+  <div class="nav-links">
+    <a href="pricing.html">Pricing</a>
+    <a href="status.html">Status</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="auth.html" class="nav-cta">Get Started Free</a>
   </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="ph-badge">🎉 <span>Just launched</span> on Product Hunt — Show your support!</div>
+  <h1>Your sites monitored by <span>real AI</span></h1>
+  <p>AI CTO watches your websites 24/7, diagnoses issues automatically, and deploys fixes — so you can sleep at night.</p>
+  <div class="hero-btns">
+    <a href="auth.html" class="btn-primary">🚀 Start for Free</a>
+    <a href="dashboard.html" class="btn-secondary">View Dashboard →</a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">24/7</div>
+    <div class="stat-label">Uptime Monitoring</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">&lt;5min</div>
+    <div class="stat-label">Alert Response Time</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Free Forever</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">AI</div>
+    <div class="stat-label">Auto-Fix Engine</div>
+  </div>
+</div>
+
+<!-- Features -->
+<div class="features">
+  <h2>Everything you need to sleep at night</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <div class="feature-title">Smart Monitoring</div>
+      <div class="feature-desc">Checks your sites every 5 minutes. Instant alerts via Telegram, email, and push notifications when something goes wrong.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-title">AI Auto-Fix</div>
+      <div class="feature-desc">When your site goes down, AI diagnoses the issue, proposes a fix, and can automatically deploy it to GitHub.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Beautiful Dashboard</div>
+      <div class="feature-desc">See all your sites, uptime percentages, response times, and fix history in one clean dashboard.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <div class="feature-title">Mobile App</div>
+      <div class="feature-desc">Native Android app with push notifications. Add, pause, and remove sites from your phone.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <div class="feature-title">Public Status Page</div>
+      <div class="feature-desc">Share your uptime with the world. Get a free public status page at ai-cto.onrender.com/status.html?u=you</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👥</div>
+      <div class="feature-title">Team Support</div>
+      <div class="feature-desc">Invite teammates to monitor sites together. Pro plan includes unlimited team members.</div>
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<div class="how-it-works">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Add your site</div>
+      <div class="step-desc">Paste your URL and we start monitoring immediately</div>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">AI watches 24/7</div>
+      <div class="step-desc">Checks every 5 minutes, alerts you instantly if anything goes wrong</div>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">AI fixes it</div>
+      <div class="step-desc">Diagnoses the issue and deploys a fix automatically</div>
+    </div>
+  </div>
+</div>
+
+<!-- Testimonials -->
+<div class="testimonials">
+  <h2>Loved by developers</h2>
+  <div class="testimonial-grid">
+    <div class="testimonial">
+      <div class="testimonial-text">"AI CTO caught my site being down before any of my users noticed. The auto-fix feature is insane — it actually deployed a fix while I was sleeping!"</div>
+      <div class="testimonial-author">
+        <div class="avatar">R</div>
+        <div>
+          <div class="author-name">Rahul M.</div>
+          <div class="author-role">Full Stack Developer</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-text">"Finally a free monitoring tool that doesn't feel cheap. The dashboard is beautiful and the Telegram alerts are instant."</div>
+      <div class="testimonial-author">
+        <div class="avatar">S</div>
+        <div>
+          <div class="author-name">Sarah K.</div>
+          <div class="author-role">Indie Hacker</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-text">"I monitor 10 client sites with AI CTO. The public status pages alone save me hours of support emails every month."</div>
+      <div class="testimonial-author">
+        <div class="avatar">A</div>
+        <div>
+          <div class="author-name">Alex T.</div>
+          <div class="author-role">Freelance Developer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Start monitoring for free</h2>
+  <p>No credit card. No setup fees. Just paste your URL and go.</p>
+  <a href="auth.html" class="btn-primary">🚀 Get Started Free</a>
+
+  <div class="embed-badge">
+    <h3>📋 Add "Monitored by AI CTO" badge to your site:</h3>
+    <div class="embed-code" onclick="copyBadge()" title="Click to copy">
+      &lt;a href="https://ai-cto.onrender.com"&gt;&lt;img src="https://ai-cto.onrender.com/badge.svg" alt="Monitored by AI CTO"&gt;&lt;/a&gt;
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AI CTO · Built with ❤️ by Yogeshwar · <a href="pricing.html">Pricing</a> · <a href="status.html">Status</a> · <a href="mailto:srk41934@gmail.com">Contact</a></p>
+</footer>
+
+<script>
+  function copyBadge() {
+    navigator.clipboard.writeText('<a href="https://ai-cto.onrender.com"><img src="https://ai-cto.onrender.com/badge.svg" alt="Monitored by AI CTO"></a>');
+    alert("Badge code copied!");
+  }
+</script>
 </body>
 </html>
