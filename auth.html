@@ -85,7 +85,11 @@
     "Content-Type": "application/json"
   };
 
-  const isMobile = /Android|iPhone/i.test(navigator.userAgent);
+  const isMobile = /Android|iPhone/i.test(navigator.userAgent);// Hide Google button on mobile WebView
+if (isMobile) {
+  document.getElementById("google-btn").style.display = "none";
+  document.querySelector(".divider").style.display = "none";
+}
   const homeUrl = isMobile ? "pwa.html" : "dashboard.html";
 
   document.getElementById("google-btn").addEventListener("click", () => {
