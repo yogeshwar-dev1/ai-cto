@@ -1,13 +1,360 @@
-CREATE TABLE IF NOT EXISTS payments (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id text NOT NULL,
-  payment_id text,
-  plan text DEFAULT 'pro',
-  period text DEFAULT 'monthly',
-  amount numeric,
-  currency text DEFAULT 'INR',
-  status text DEFAULT 'success',
-  created_at timestamp DEFAULT now()
-);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI CTO — Pricing</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; min-height: 100vh; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid #2a2a2a; }
+    .logo { font-size: 20px; font-weight: 700; }
+    .nav-links { display: flex; gap: 16px; }
+    .nav-links a { color: #888; text-decoration: none; font-size: 14px; }
+    .nav-links a:hover { color: #fff; }
+    .hero { text-align: center; padding: 80px 24px 48px; }
+    .hero h1 { font-size: 42px; font-weight: 700; margin-bottom: 16px; }
+    .hero p { color: #888; font-size: 18px; max-width: 500px; margin: 0 auto; }
+    .toggle { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 32px 0; }
+    .toggle-label { font-size: 14px; color: #888; cursor: pointer; }
+    .toggle-label.active { color: #fff; font-weight: 600; }
+    .toggle-switch { width: 48px; height: 26px; background: #2a2a2a; border-radius: 13px; cursor: pointer; position: relative; transition: background 0.3s; }
+    .toggle-switch.on { background: #4ade80; }
+    .toggle-knob { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.3s; }
+    .toggle-switch.on .toggle-knob { left: 25px; }
+    .save-badge { background: #0d2e1a; color: #4ade80; font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+    .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; padding: 0 24px 80px; }
+    .plan { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 32px; position: relative; }
+    .plan.popular { border-color: #4ade80; }
+    .plan.lifetime { border-color: #f59e0b; }
+    .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #4ade80; color: #000; font-size: 12px; font-weight: 700; padding: 4px 16px; border-radius: 20px; white-space: nowrap; }
+    .lifetime-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: #000; font-size: 12px; font-weight: 700; padding: 4px 16px; border-radius: 20px; white-space: nowrap; }
+    .plan-name { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .plan-desc { color: #888; font-size: 14px; margin-bottom: 24px; }
+    .plan-price { margin-bottom: 8px; }
+    .price-amount { font-size: 48px; font-weight: 700; color: #4ade80; }
+    .price-amount.gold { color: #f59e0b; }
+    .price-period { color: #888; font-size: 14px; }
+    .price-original { color: #888; text-decoration: line-through; font-size: 16px; margin-right: 6px; }
+    .price-saving { font-size: 12px; color: #4ade80; margin-bottom: 20px; }
+    .features { list-style: none; margin-bottom: 32px; }
+    .features li { padding: 8px 0; font-size: 14px; color: #ccc; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; gap: 8px; }
+    .features li:last-child { border-bottom: none; }
+    .check { color: #4ade80; }
+    .cross { color: #f87171; }
+    .gold-check { color: #f59e0b; }
+    .btn-plan { width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-free { background: #2a2a2a; color: #fff; }
+    .btn-free:hover { background: #3a3a3a; }
+    .btn-pro { background: #4ade80; color: #000; }
+    .btn-pro:hover { background: #22c55e; }
+    .btn-pro:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+    .btn-lifetime { background: #f59e0b; color: #000; }
+    .btn-lifetime:hover { background: #d97706; }
+    .faq { max-width: 700px; margin: 0 auto; padding: 0 24px 80px; }
+    .faq h2 { font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 32px; }
+    .faq-item { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; }
+    .faq-q { font-size: 15px; font-weight: 500; display: flex; justify-content: space-between; }
+    .faq-a { font-size: 14px; color: #888; margin-top: 12px; display: none; line-height: 1.6; }
+    .faq-item.open .faq-a { display: block; }
+    .faq-arrow { transition: transform 0.2s; }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+    footer { text-align: center; padding: 40px 24px; border-top: 1px solid #2a2a2a; color: #888; font-size: 13px; }
+    footer a { color: #4ade80; text-decoration: none; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 20px; font-size: 13px; color: #fff; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    .toast.success { border-color: #4ade80; color: #4ade80; }
+    .toast.error { border-color: #f87171; color: #f87171; }
+    .test-notice { background: #2a2010; border: 1px solid #facc15; border-radius: 10px; padding: 12px 20px; text-align: center; font-size: 13px; color: #facc15; margin: 0 24px 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
+  </style>
+</head>
+<body>
 
-ALTER TABLE payments DISABLE ROW LEVEL SECURITY;
+<nav>
+  <div class="logo">🤖 AI CTO</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="auth.html">Login</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Simple, transparent pricing</h1>
+  <p>Start free, upgrade when you need more. No hidden fees.</p>
+
+  <div class="toggle">
+    <span class="toggle-label active" id="label-monthly">Monthly</span>
+    <div class="toggle-switch" id="billing-toggle">
+      <div class="toggle-knob"></div>
+    </div>
+    <span class="toggle-label" id="label-yearly">Yearly <span class="save-badge">Save 20%</span></span>
+  </div>
+</div>
+
+<div class="test-notice">
+  ⚠️ Test mode — No real payments will be charged. Use card: 4111 1111 1111 1111, any future date, any CVV.
+</div>
+
+<div class="plans">
+  <!-- FREE -->
+  <div class="plan">
+    <div class="plan-name">Free</div>
+    <div class="plan-desc">Perfect for getting started</div>
+    <div class="plan-price">
+      <span class="price-amount">₹0</span>
+      <span class="price-period">/month</span>
+    </div>
+    <div class="price-saving">&nbsp;</div>
+    <ul class="features">
+      <li><span class="check">✓</span> Up to 3 sites</li>
+      <li><span class="check">✓</span> 5-minute checks</li>
+      <li><span class="check">✓</span> Email + Telegram alerts</li>
+      <li><span class="check">✓</span> 7-day history</li>
+      <li><span class="check">✓</span> Public status page</li>
+      <li><span class="check">✓</span> 2 team members</li>
+      <li><span class="cross">✗</span> AI auto-fix</li>
+      <li><span class="cross">✗</span> SMS alerts</li>
+      <li><span class="cross">✗</span> Custom domain</li>
+    </ul>
+    <button class="btn-plan btn-free" onclick="window.location.href='auth.html'">Get Started Free</button>
+  </div>
+
+  <!-- PRO -->
+  <div class="plan popular">
+    <div class="popular-badge">⚡ Most Popular</div>
+    <div class="plan-name">Pro</div>
+    <div class="plan-desc">For serious builders and teams</div>
+    <div class="plan-price">
+      <span class="price-original" id="original-price" style="display:none;"></span>
+      <span class="price-amount" id="pro-price">₹750</span>
+      <span class="price-period" id="price-period">/month</span>
+    </div>
+    <div class="price-saving" id="price-saving">&nbsp;</div>
+    <ul class="features">
+      <li><span class="check">✓</span> Unlimited sites</li>
+      <li><span class="check">✓</span> 1-minute checks</li>
+      <li><span class="check">✓</span> Email + Telegram + SMS</li>
+      <li><span class="check">✓</span> 90-day history</li>
+      <li><span class="check">✓</span> Public status page</li>
+      <li><span class="check">✓</span> 5 team members</li>
+      <li><span class="check">✓</span> AI auto-fix</li>
+      <li><span class="check">✓</span> Custom domain</li>
+      <li><span class="check">✓</span> Priority support</li>
+    </ul>
+    <button class="btn-plan btn-pro" id="btn-upgrade" onclick="startPayment('pro')">Upgrade to Pro</button>
+  </div>
+
+  <!-- LIFETIME -->
+  <div class="plan lifetime">
+    <div class="lifetime-badge">🔥 Limited Offer</div>
+    <div class="plan-name">Lifetime</div>
+    <div class="plan-desc">Pay once, use forever</div>
+    <div class="plan-price">
+      <span class="price-original">₹9000</span>
+      <span class="price-amount gold">₹3999</span>
+      <span class="price-period"> one time</span>
+    </div>
+    <div class="price-saving" style="color:#f59e0b;">Save ₹5001 — Early bird price!</div>
+    <ul class="features">
+      <li><span class="gold-check">✓</span> Everything in Pro</li>
+      <li><span class="gold-check">✓</span> Lifetime access</li>
+      <li><span class="gold-check">✓</span> All future features</li>
+      <li><span class="gold-check">✓</span> 10 team members</li>
+      <li><span class="gold-check">✓</span> No monthly fees ever</li>
+      <li><span class="gold-check">✓</span> Priority support forever</li>
+      <li><span class="gold-check">✓</span> Founding member badge</li>
+      <li><span class="gold-check">✓</span> Direct access to founder</li>
+      <li><span class="gold-check">✓</span> Feature request priority</li>
+    </ul>
+    <button class="btn-plan btn-lifetime" onclick="startPayment('lifetime')">Get Lifetime Access</button>
+  </div>
+</div>
+
+<div class="faq">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">What happens when I hit the 3-site limit? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">You'll see a warning when approaching the limit. Your existing sites keep working — just upgrade to Pro to add more.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Can I cancel anytime? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Yes! Cancel anytime. You keep Pro access until the end of your billing period. No questions asked.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Is my payment secure? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Absolutely. Payments are processed by Razorpay — India's most trusted payment gateway. We never store your card details.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">What is the Lifetime deal? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Pay ₹3999 once and get Pro access forever — including all future features. This price will increase as we add more features. Early bird offer!</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Do you offer refunds? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Yes, 7-day money-back guarantee. Email srk41934@gmail.com if you're not satisfied.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">What is AI auto-fix? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">When your site goes down, our AI analyzes the error, proposes a fix, and automatically deploys it to GitHub. Pro and Lifetime users get this feature.</div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AI CTO · <a href="index.html">Home</a> · <a href="mailto:srk41934@gmail.com">Contact</a> · 7-day money back guarantee</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+  const RAZORPAY_KEY = "rzp_test_SgUvxofze9yxDu";
+
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json"
+  };
+
+  let isYearly = false;
+  let currentUser = JSON.parse(localStorage.getItem("aicto_user") || "null");
+
+  const prices = {
+    monthly: { amount: 75000, display: "₹750", period: "/month", saving: "" },
+    yearly: { amount: 720000, display: "₹7200", period: "/year", saving: "Save ₹1800 vs monthly!" },
+    lifetime: { amount: 399900, display: "₹3999", period: " one time", saving: "Save ₹5001 — Early bird!" }
+  };
+
+  function showToast(msg, type = "success") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = `toast show ${type}`;
+    setTimeout(() => t.className = "toast", 4000);
+  }
+
+  // Billing toggle
+  document.getElementById("billing-toggle").addEventListener("click", () => {
+    isYearly = !isYearly;
+    const toggle = document.getElementById("billing-toggle");
+    toggle.classList.toggle("on", isYearly);
+    document.getElementById("label-monthly").classList.toggle("active", !isYearly);
+    document.getElementById("label-yearly").classList.toggle("active", isYearly);
+
+    if (isYearly) {
+      document.getElementById("pro-price").textContent = "₹7200";
+      document.getElementById("price-period").textContent = "/year";
+      document.getElementById("original-price").style.display = "inline";
+      document.getElementById("original-price").textContent = "₹9000";
+      document.getElementById("price-saving").textContent = "Save ₹1800 vs monthly!";
+      document.getElementById("price-saving").style.color = "#4ade80";
+    } else {
+      document.getElementById("pro-price").textContent = "₹750";
+      document.getElementById("price-period").textContent = "/month";
+      document.getElementById("original-price").style.display = "none";
+      document.getElementById("price-saving").textContent = " ";
+    }
+  });
+
+  function toggleFaq(el) {
+    el.classList.toggle("open");
+  }
+
+  function startPayment(type) {
+    if (!currentUser) {
+      showToast("Please login first!", "error");
+      setTimeout(() => window.location.href = "auth.html", 1500);
+      return;
+    }
+
+    let amount, description, plan, period;
+
+    if (type === "lifetime") {
+      amount = 399900;
+      description = "AI CTO — Lifetime Access";
+      plan = "lifetime";
+      period = "lifetime";
+    } else if (isYearly) {
+      amount = 720000;
+      description = "AI CTO Pro — Yearly Plan";
+      plan = "pro";
+      period = "yearly";
+    } else {
+      amount = 75000;
+      description = "AI CTO Pro — Monthly Plan";
+      plan = "pro";
+      period = "monthly";
+    }
+
+    const options = {
+      key: RAZORPAY_KEY,
+      amount: amount,
+      currency: "INR",
+      name: "AI CTO",
+      description: description,
+      handler: async function(response) {
+        await handlePaymentSuccess(response, plan, period, amount);
+      },
+      prefill: {
+        name: currentUser.name || "",
+        email: currentUser.email || ""
+      },
+      notes: {
+        user_id: currentUser.id,
+        plan: plan,
+        period: period
+      },
+      theme: { color: type === "lifetime" ? "#f59e0b" : "#4ade80" },
+      modal: {
+        ondismiss: function() {
+          showToast("Payment cancelled", "error");
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  }
+
+  async function handlePaymentSuccess(response, plan, period, amount) {
+    try {
+      showToast("Processing payment...");
+
+      // Save payment to Supabase
+      await fetch(`${SUPABASE_URL}/rest/v1/payments`, {
+        method: "POST",
+        headers: { ...headers, "Prefer": "return=minimal" },
+        body: JSON.stringify({
+          user_id: currentUser.id,
+          payment_id: response.razorpay_payment_id,
+          plan: plan,
+          period: period,
+          amount: amount / 100,
+          currency: "INR",
+          status: "success"
+        })
+      });
+
+      // Upgrade user plan in Supabase
+      const updateData = plan === "lifetime"
+        ? { plan: "lifetime", sites_limit: 999, team_limit: 10 }
+        : { plan: "pro", sites_limit: 999, team_limit: 5 };
+
+      await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser.id}`, {
+        method: "PATCH",
+        headers: { ...headers, "Prefer": "return=minimal" },
+        body: JSON.stringify(updateData)
+      });
+
+      showToast(plan === "lifetime" ? "🎉 Welcome to Lifetime! You're set for life!" : "🎉 You're now Pro!");
+      document.getElementById("btn-upgrade").disabled = true;
+      document.getElementById("btn-upgrade").textContent = "✅ Activated!";
+
+      setTimeout(() => window.location.href = "dashboard.html", 2500);
+    } catch(e) {
+      showToast("Payment done but upgrade failed. Email srk41934@gmail.com with your payment ID: " + response.razorpay_payment_id, "error");
+    }
+  }
+</script>
+</body>
+</html>
