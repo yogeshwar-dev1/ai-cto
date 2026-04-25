@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -162,6 +162,21 @@ const isMobile = /Android|iPhone/i.test(navigator.userAgent);
       showMsg("Network error. Try again.", "error");
     }
   });
+</script>
+<script>
+function showForgot() {
+  const email = document.getElementById("login-email").value.trim();
+  const entered = prompt("Enter your email address to reset password:", email || "");
+  if (!entered) return;
+  const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+  fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+    method: "POST",
+    headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: entered })
+  }).then(() => alert("Password reset email sent to " + entered + "! Check your inbox."))
+    .catch(() => alert("Failed to send reset email. Try again."));
+}
 </script>
 </body>
 </html>
