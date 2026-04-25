@@ -1,0 +1,182 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI CTO – Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .box { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .sub { color: #888; font-size: 13px; margin-bottom: 28px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #2a2a2a; background: #111; color: #888; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .tab.active { background: #fff; color: #000; border-color: #fff; }
+    label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; }
+    input { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px; margin-bottom: 14px; outline: none; }
+    input:focus { border-color: #4ade80; }
+    .btn { width: 100%; background: #4ade80; border: none; color: #000; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; margin-top: 4px; }
+    .btn:hover { background: #22c55e; }
+    .divider { display: flex; align-items: center; gap: 10px; margin: 20px 0; }
+    .divider-line { flex: 1; height: 1px; background: #2a2a2a; }
+    .divider-text { color: #888; font-size: 12px; }
+    .google-btn { width: 100%; background: #fff; border: none; color: #000; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px; }
+    .google-btn:hover { background: #f0f0f0; }
+    .msg { font-size: 13px; margin-top: 14px; text-align: center; padding: 10px; border-radius: 8px; display: none; }
+    .msg.error { background: #2e0d0d; color: #f87171; display: block; }
+    .msg.success { background: #0d2e1a; color: #4ade80; display: block; }
+  </style>
+</head>
+<body>
+<div class="box">
+  <h1>🤖 AI CTO</h1>
+  <div class="sub">Monitor your sites with AI</div>
+
+  <button class="google-btn" id="google-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+    Continue with Google
+  </button>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">or</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-login" onclick="showTab('login')">Login</button>
+    <button class="tab" id="tab-signup" onclick="showTab('signup')">Sign Up</button>
+  </div>
+
+  <div id="form-login">
+    <label>Email</label>
+    <input type="email" id="login-email" placeholder="you@email.com">
+    <label>Password</label>
+    <input type="password" id="login-password" placeholder="••••••••">
+    <button class="btn" id="login-btn">Login</button>
+  </div>
+
+  <div id="form-signup" style="display:none;">
+    <label>Name</label>
+    <input type="text" id="signup-name" placeholder="Your name">
+    <label>Email</label>
+    <input type="email" id="signup-email" placeholder="you@email.com">
+    <label>Password</label>
+    <input type="password" id="signup-password" placeholder="••••••••">
+    <button class="btn" id="signup-btn">Create Account</button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json"
+  };
+
+  const isWebView = /Android|iPhone/i.test(navigator.userAgent) && /wv|WebView/i.test(navigator.userAgent);
+if (isWebView) {
+  document.getElementById("google-btn").style.display = "none";
+  document.querySelector(".divider").style.display = "none";
+}
+const isMobile = /Android|iPhone/i.test(navigator.userAgent);
+  const homeUrl = isMobile ? "pwa.html" : "dashboard.html";
+
+  document.getElementById("google-btn").addEventListener("click", () => {
+    const redirectTo = isMobile ? "https://ai-cto.onrender.com/pwa.html" : "https://ai-cto.onrender.com/dashboard.html";
+    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+  });
+
+  function showTab(tab) {
+    document.getElementById("form-login").style.display = tab === "login" ? "block" : "none";
+    document.getElementById("form-signup").style.display = tab === "signup" ? "block" : "none";
+    document.getElementById("tab-login").className = "tab" + (tab === "login" ? " active" : "");
+    document.getElementById("tab-signup").className = "tab" + (tab === "signup" ? " active" : "");
+    document.getElementById("msg").className = "msg";
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById("msg");
+    el.textContent = text;
+    el.className = "msg " + type;
+  }
+
+  document.getElementById("login-btn").addEventListener("click", async () => {
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value.trim();
+    if (!email || !password) return showMsg("Please fill all fields", "error");
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.access_token) {
+        const user = {
+          name: data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0],
+          email: data.user?.email,
+          id: data.user?.id
+        };
+        localStorage.setItem("aicto_user", JSON.stringify(user));
+        showMsg("Login successful! Redirecting...", "success");
+        setTimeout(() => window.location.href = homeUrl, 1000);
+      } else {
+        showMsg(data.error_description || "Invalid email or password", "error");
+      }
+    } catch(e) {
+      showMsg("Network error. Try again.", "error");
+    }
+  });
+
+  document.getElementById("signup-btn").addEventListener("click", async () => {
+    const name = document.getElementById("signup-name").value.trim();
+    const email = document.getElementById("signup-email").value.trim();
+    const password = document.getElementById("signup-password").value.trim();
+    if (!name || !email || !password) return showMsg("Please fill all fields", "error");
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, data: { full_name: name } })
+      });
+      const data = await res.json();
+      if (data.id || data.user?.id) {
+        showMsg("Account created! Please login.", "success");
+        setTimeout(() => showTab("login"), 1500);
+      } else {
+        showMsg(data.error_description || data.msg || "Error creating account", "error");
+      }
+    } catch(e) {
+      showMsg("Network error. Try again.", "error");
+    }
+  });
+</script>
+<script>
+function showForgot() {
+  const email = document.getElementById("login-email").value.trim();
+  const entered = prompt("Enter your email address to reset password:", email || "");
+  if (!entered) return;
+  const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
+  fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+    method: "POST",
+    headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: entered })
+  }).then(() => alert("Password reset email sent to " + entered + "! Check your inbox."))
+    .catch(() => alert("Failed to send reset email. Try again."));
+}
+</script>
+</body>
+</html>

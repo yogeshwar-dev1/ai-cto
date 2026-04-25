@@ -3,180 +3,157 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI CTO – Login</title>
+  <title>AI CTO — Sign In</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
-    .box { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; }
-    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-    .sub { color: #888; font-size: 13px; margin-bottom: 28px; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-    .tab { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #2a2a2a; background: #111; color: #888; cursor: pointer; font-size: 13px; font-weight: 600; }
-    .tab.active { background: #fff; color: #000; border-color: #fff; }
-    label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; }
-    input { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px; margin-bottom: 14px; outline: none; }
-    input:focus { border-color: #4ade80; }
-    .btn { width: 100%; background: #4ade80; border: none; color: #000; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; margin-top: 4px; }
-    .btn:hover { background: #22c55e; }
-    .divider { display: flex; align-items: center; gap: 10px; margin: 20px 0; }
-    .divider-line { flex: 1; height: 1px; background: #2a2a2a; }
-    .divider-text { color: #888; font-size: 12px; }
-    .google-btn { width: 100%; background: #fff; border: none; color: #000; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px; }
-    .google-btn:hover { background: #f0f0f0; }
-    .msg { font-size: 13px; margin-top: 14px; text-align: center; padding: 10px; border-radius: 8px; display: none; }
-    .msg.error { background: #2e0d0d; color: #f87171; display: block; }
-    .msg.success { background: #0d2e1a; color: #4ade80; display: block; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .bg { position: fixed; inset: 0; z-index: 0; background: #0a0a0a; overflow: hidden; }
+    .bg-circle { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: float 8s ease-in-out infinite; }
+    .bg-circle:nth-child(1) { width: 500px; height: 500px; background: #4ade80; top: -150px; left: -150px; animation-delay: 0s; }
+    .bg-circle:nth-child(2) { width: 400px; height: 400px; background: #22d3ee; bottom: -100px; right: -100px; animation-delay: 3s; }
+    .bg-circle:nth-child(3) { width: 300px; height: 300px; background: #818cf8; top: 50%; left: 50%; animation-delay: 6s; }
+    @keyframes float { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(20px,-20px) scale(1.05); } 66% { transform: translate(-15px,15px) scale(0.95); } }
+    .bg-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 40px 40px; z-index: 0; }
+    .container { position: relative; z-index: 1; width: 100%; max-width: 420px; padding: 24px; }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo-icon { width: 56px; height: 56px; background: linear-gradient(135deg, #4ade80, #22c55e); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px; box-shadow: 0 8px 32px rgba(74,222,128,0.3); }
+    .logo-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .logo-sub { font-size: 13px; color: #666; margin-top: 4px; }
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 32px; backdrop-filter: blur(20px); box-shadow: 0 24px 64px rgba(0,0,0,0.4); }
+    .auth-tabs { display: flex; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 4px; margin-bottom: 28px; }
+    .auth-tab { flex: 1; text-align: center; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; color: #666; transition: all 0.2s; }
+    .auth-tab.active { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 500; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-wrap { position: relative; }
+    .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; opacity: 0.4; }
+    input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 12px 14px 12px 40px; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: all 0.2s; }
+    input:focus { border-color: #4ade80; background: rgba(74,222,128,0.05); box-shadow: 0 0 0 3px rgba(74,222,128,0.1); }
+    input::placeholder { color: #444; }
+    .btn-primary { width: 100%; padding: 13px; background: linear-gradient(135deg, #4ade80, #22c55e); color: #000; font-weight: 700; font-size: 14px; font-family: inherit; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px rgba(74,222,128,0.3); margin-top: 8px; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(74,222,128,0.4); }
+    .btn-primary:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; box-shadow: none; transform: none; }
+    .btn-google { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 14px; font-family: inherit; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; margin-bottom: 20px; }
+    .btn-google:hover { background: rgba(255,255,255,0.08); }
+    .divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; color: #444; font-size: 12px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+    .msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .msg.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: #f87171; display: block; }
+    .msg.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); color: #4ade80; display: block; }
+    .forgot-link { text-align: right; margin-bottom: 16px; }
+    .forgot-link a { color: #4ade80; font-size: 12px; text-decoration: none; opacity: 0.8; }
+    .footer-text { text-align: center; font-size: 12px; color: #444; margin-top: 20px; }
+    .features { display: flex; justify-content: center; gap: 20px; margin-top: 24px; flex-wrap: wrap; }
+    .feature { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
+    .feature span { color: #4ade80; }
+    .form-section { display: none; }
+    .form-section.active { display: block; }
   </style>
 </head>
 <body>
-<div class="box">
-  <h1>🤖 AI CTO</h1>
-  <div class="sub">Monitor your sites with AI</div>
-
-  <button class="google-btn" id="google-btn">
-    <svg width="20" height="20" viewBox="0 0 24 24">
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-    </svg>
-    Continue with Google
-  </button>
-
-  <div class="divider">
-    <div class="divider-line"></div>
-    <div class="divider-text">or</div>
-    <div class="divider-line"></div>
+<div class="bg"><div class="bg-circle"></div><div class="bg-circle"></div><div class="bg-circle"></div></div>
+<div class="bg-grid"></div>
+<div class="container">
+  <div class="logo">
+    <div class="logo-icon">&#x1F916;</div>
+    <div class="logo-title">AI CTO</div>
+    <div class="logo-sub">Your AI-powered site monitoring assistant</div>
   </div>
-
-  <div class="tabs">
-    <button class="tab active" id="tab-login" onclick="showTab('login')">Login</button>
-    <button class="tab" id="tab-signup" onclick="showTab('signup')">Sign Up</button>
+  <div class="card">
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</div>
+      <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</div>
+    </div>
+    <div id="msg" class="msg"></div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.31z"/></svg>
+      Continue with Google
+    </button>
+    <div class="divider">or use email</div>
+    <div class="form-section active" id="form-login">
+      <div class="form-group"><label>Email</label><div class="input-wrap"><span class="input-icon">&#x1F4E7;</span><input type="email" id="login-email" placeholder="you@example.com" /></div></div>
+      <div class="form-group"><label>Password</label><div class="input-wrap"><span class="input-icon">&#x1F512;</span><input type="password" id="login-password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" /></div></div>
+      <div class="forgot-link"><a href="#" onclick="showForgot()">Forgot password?</a></div>
+      <button class="btn-primary" id="btn-login" onclick="login()">Sign In &#x2192;</button>
+    </div>
+    <div class="form-section" id="form-signup">
+      <div class="form-group"><label>Your Name</label><div class="input-wrap"><span class="input-icon">&#x1F464;</span><input type="text" id="signup-name" placeholder="Yogeshwar" /></div></div>
+      <div class="form-group"><label>Email</label><div class="input-wrap"><span class="input-icon">&#x1F4E7;</span><input type="email" id="signup-email" placeholder="you@example.com" /></div></div>
+      <div class="form-group"><label>Password</label><div class="input-wrap"><span class="input-icon">&#x1F512;</span><input type="password" id="signup-password" placeholder="Min 6 characters" /></div></div>
+      <button class="btn-primary" id="btn-signup" onclick="signup()">Create Account &#x2192;</button>
+    </div>
+    <div class="footer-text">By continuing you agree to our Terms of Service</div>
   </div>
-
-  <div id="form-login">
-    <label>Email</label>
-    <input type="email" id="login-email" placeholder="you@email.com">
-    <label>Password</label>
-    <input type="password" id="login-password" placeholder="••••••••">
-    <button class="btn" id="login-btn">Login</button>
+  <div class="features">
+    <div class="feature"><span>&#x2713;</span> Free forever plan</div>
+    <div class="feature"><span>&#x2713;</span> No credit card needed</div>
+    <div class="feature"><span>&#x2713;</span> Setup in 2 minutes</div>
   </div>
-
-  <div id="form-signup" style="display:none;">
-    <label>Name</label>
-    <input type="text" id="signup-name" placeholder="Your name">
-    <label>Email</label>
-    <input type="email" id="signup-email" placeholder="you@email.com">
-    <label>Password</label>
-    <input type="password" id="signup-password" placeholder="••••••••">
-    <button class="btn" id="signup-btn">Create Account</button>
-  </div>
-
-  <div class="msg" id="msg"></div>
 </div>
-
 <script>
   const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
-
-  const headers = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": `Bearer ${SUPABASE_KEY}`,
-    "Content-Type": "application/json"
-  };
-
-  const isWebView = /Android|iPhone/i.test(navigator.userAgent) && /wv|WebView/i.test(navigator.userAgent);
-if (isWebView) {
-  document.getElementById("google-btn").style.display = "none";
-  document.querySelector(".divider").style.display = "none";
-}
-const isMobile = /Android|iPhone/i.test(navigator.userAgent);
-  const homeUrl = isMobile ? "pwa.html" : "dashboard.html";
-
-  document.getElementById("google-btn").addEventListener("click", () => {
-    const redirectTo = isMobile ? "https://ai-cto.onrender.com/pwa.html" : "https://ai-cto.onrender.com/dashboard.html";
-    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
-  });
-
-  function showTab(tab) {
-    document.getElementById("form-login").style.display = tab === "login" ? "block" : "none";
-    document.getElementById("form-signup").style.display = tab === "signup" ? "block" : "none";
-    document.getElementById("tab-login").className = "tab" + (tab === "login" ? " active" : "");
-    document.getElementById("tab-signup").className = "tab" + (tab === "signup" ? " active" : "");
-    document.getElementById("msg").className = "msg";
+  function switchTab(tab) {
+    document.getElementById("tab-login").classList.toggle("active", tab === "login");
+    document.getElementById("tab-signup").classList.toggle("active", tab === "signup");
+    document.getElementById("form-login").classList.toggle("active", tab === "login");
+    document.getElementById("form-signup").classList.toggle("active", tab === "signup");
+    showMsg("", "");
   }
-
   function showMsg(text, type) {
     const el = document.getElementById("msg");
     el.textContent = text;
-    el.className = "msg " + type;
+    el.className = "msg" + (type ? " " + type : "");
   }
-
-  document.getElementById("login-btn").addEventListener("click", async () => {
+  async function login() {
     const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value.trim();
     if (!email || !password) return showMsg("Please fill all fields", "error");
+    const btn = document.getElementById("btn-login");
+    btn.disabled = true; btn.textContent = "Signing in...";
     try {
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-        method: "POST",
-        headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
+      const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password", { method: "POST", headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
       const data = await res.json();
       if (data.access_token) {
-        const user = {
-          name: data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0],
-          email: data.user?.email,
-          id: data.user?.id
-        };
-        localStorage.setItem("aicto_user", JSON.stringify(user));
-        showMsg("Login successful! Redirecting...", "success");
-        setTimeout(() => window.location.href = homeUrl, 1000);
-      } else {
-        showMsg(data.error_description || "Invalid email or password", "error");
-      }
-    } catch(e) {
-      showMsg("Network error. Try again.", "error");
-    }
-  });
-
-  document.getElementById("signup-btn").addEventListener("click", async () => {
+        const u = await fetch(SUPABASE_URL + "/auth/v1/user", { headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + data.access_token } });
+        const ud = await u.json();
+        localStorage.setItem("aicto_user", JSON.stringify({ name: ud.user_metadata?.full_name || ud.user_metadata?.name || email.split("@")[0], email: ud.email, id: ud.id }));
+        window.location.href = "dashboard.html";
+      } else { showMsg(data.error_description || "Invalid email or password", "error"); btn.disabled = false; btn.textContent = "Sign In"; }
+    } catch(e) { showMsg("Network error. Try again.", "error"); btn.disabled = false; btn.textContent = "Sign In"; }
+  }
+  async function signup() {
     const name = document.getElementById("signup-name").value.trim();
     const email = document.getElementById("signup-email").value.trim();
     const password = document.getElementById("signup-password").value.trim();
     if (!name || !email || !password) return showMsg("Please fill all fields", "error");
+    if (password.length < 6) return showMsg("Password must be at least 6 characters", "error");
+    const btn = document.getElementById("btn-signup");
+    btn.disabled = true; btn.textContent = "Creating account...";
     try {
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-        method: "POST",
-        headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, data: { full_name: name } })
-      });
+      const res = await fetch(SUPABASE_URL + "/auth/v1/signup", { method: "POST", headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ email, password, data: { full_name: name } }) });
       const data = await res.json();
-      if (data.id || data.user?.id) {
-        showMsg("Account created! Please login.", "success");
-        setTimeout(() => showTab("login"), 1500);
-      } else {
-        showMsg(data.error_description || data.msg || "Error creating account", "error");
-      }
-    } catch(e) {
-      showMsg("Network error. Try again.", "error");
-    }
-  });
-</script>
-<script>
-function showForgot() {
-  const email = document.getElementById("login-email").value.trim();
-  const entered = prompt("Enter your email address to reset password:", email || "");
-  if (!entered) return;
-  const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
-  fetch(`${SUPABASE_URL}/auth/v1/recover`, {
-    method: "POST",
-    headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ email: entered })
-  }).then(() => alert("Password reset email sent to " + entered + "! Check your inbox."))
-    .catch(() => alert("Failed to send reset email. Try again."));
-}
+      if (data.id || data.access_token) {
+        if (data.access_token) { localStorage.setItem("aicto_user", JSON.stringify({ name, email, id: data.id || data.user?.id })); window.location.href = "dashboard.html"; }
+        else { showMsg("Account created! You can now sign in.", "success"); switchTab("login"); document.getElementById("login-email").value = email; }
+      } else { showMsg(data.error_description || data.msg || "Signup failed. Try again.", "error"); }
+    } catch(e) { showMsg("Network error. Try again.", "error"); }
+    btn.disabled = false; btn.textContent = "Create Account";
+  }
+  function loginGoogle() {
+    window.location.href = SUPABASE_URL + "/auth/v1/authorize?provider=google&redirect_to=" + encodeURIComponent(window.location.origin + "/dashboard.html");
+  }
+  function showForgot() {
+    const email = document.getElementById("login-email").value.trim();
+    const entered = prompt("Enter your email to receive a password reset link:", email || "");
+    if (!entered) return;
+    fetch(SUPABASE_URL + "/auth/v1/recover", { method: "POST", headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ email: entered }) })
+      .then(() => showMsg("Reset link sent! Check your inbox.", "success"))
+      .catch(() => showMsg("Failed to send reset email.", "error"));
+  }
+  document.addEventListener("keydown", e => { if (e.key === "Enter") { if (document.getElementById("form-login").classList.contains("active")) login(); else signup(); } });
+  if (localStorage.getItem("aicto_user")) window.location.href = "dashboard.html";
 </script>
 </body>
 </html>
