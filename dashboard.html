@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -81,7 +81,7 @@
     .plan-price { font-size: 28px; font-weight: 700; color: #4ade80; margin-bottom: 16px; }
     .plan-features { list-style: none; margin-bottom: 20px; }
     .plan-features li { padding: 6px 0; font-size: 13px; color: #ccc; }
-    .plan-features li::before { content: "✅ "; }
+    .plan-features li::before { content: "âœ… "; }
     .invite-form { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
     .member-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
     .member-row:last-child { border-bottom: none; }
@@ -97,23 +97,23 @@
 
 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
   <div>
-    <h1>🤖 AI CTO Dashboard</h1>
+    <h1>ðŸ¤– AI CTO Dashboard</h1>
     <div class="subtitle" id="last-updated">Loading...</div>
   </div>
   <div style="display:flex; align-items:center; gap:8px;">
     <span class="welcome" id="welcome-msg"></span>
     <span class="badge free" id="plan-badge">FREE</span>
-    <button class="btn btn-gray" id="refresh-btn">↻ Refresh</button>
+    <button class="btn btn-gray" id="refresh-btn">â†» Refresh</button>
     <button class="btn btn-red" id="logout-btn">Logout</button>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" data-tab="overview">📊 Overview</div>
-  <div class="tab" data-tab="sites">🌐 Manage Sites</div>
-  <div class="tab" data-tab="team">👥 Team</div>
-  <div class="tab" data-tab="account">⚙️ Account</div>
-  <div class="tab" data-tab="logs">📋 Logs</div>
+  <div class="tab active" data-tab="overview">ðŸ“Š Overview</div>
+  <div class="tab" data-tab="sites">ðŸŒ Manage Sites</div>
+  <div class="tab" data-tab="team">ðŸ‘¥ Team</div>
+  <div class="tab" data-tab="account">âš™ï¸ Account</div>
+  <div class="tab" data-tab="logs">ðŸ“‹ Logs</div>
 </div>
 
 <!-- OVERVIEW TAB -->
@@ -122,7 +122,7 @@
     <div class="loading">Loading sites...</div>
   </div>
   <div class="log-card">
-    <div class="section-title">📈 Response Time Graph</div>
+    <div class="section-title">ðŸ“ˆ Response Time Graph</div>
     <canvas id="responseChart" height="100"></canvas>
   </div>
 </div>
@@ -130,7 +130,7 @@
 <!-- MANAGE SITES TAB -->
 <div class="tab-content" id="tab-sites">
   <div class="add-site-form">
-    <div class="section-title">➕ Add New Site</div>
+    <div class="section-title">âž• Add New Site</div>
     <div id="site-limit-info" style="margin-bottom:12px;"></div>
     <div class="form-row">
       <div class="form-group">
@@ -144,7 +144,7 @@
       <button class="btn-add" id="btn-add-site">Add Site</button>
     </div>
   </div>
-  <div class="section-title">🌐 Your Sites</div>
+  <div class="section-title">ðŸŒ Your Sites</div>
   <div class="sites-list" id="sites-manager-list">
     <div class="loading">Loading...</div>
   </div>
@@ -153,7 +153,7 @@
 <!-- TEAM TAB -->
 <div class="tab-content" id="tab-team">
   <div class="invite-form">
-    <div class="section-title">➕ Invite Teammate</div>
+    <div class="section-title">âž• Invite Teammate</div>
     <div id="team-limit-info" style="margin-bottom:12px;font-size:12px;color:#888;"></div>
     <div class="form-row">
       <div class="form-group">
@@ -163,7 +163,7 @@
       <button class="btn-add" id="btn-invite">Send Invite</button>
     </div>
   </div>
-  <div class="section-title">👥 Team Members</div>
+  <div class="section-title">ðŸ‘¥ Team Members</div>
   <div class="log-card" id="team-list">
     <div class="loading">Loading team...</div>
   </div>
@@ -185,7 +185,7 @@
       <button class="btn btn-gray" id="btn-free" disabled>Current Plan</button>
     </div>
     <div class="plan-card pro">
-      <div class="plan-title">Pro Plan ⚡</div>
+      <div class="plan-title">Pro Plan âš¡</div>
       <div class="plan-price">$9<span style="font-size:14px;color:#888;">/mo</span></div>
       <ul class="plan-features">
         <li>Unlimited sites</li>
@@ -202,21 +202,21 @@
   </div>
 
   <div class="log-card">
-    <div class="section-title">👤 Account Info</div>
+    <div class="section-title">ðŸ‘¤ Account Info</div>
     <div id="account-info" style="font-size:13px; color:#ccc; line-height:2;"></div>
     <div style="margin-top:16px;">
       <div style="font-size:12px;color:#888;margin-bottom:6px;">Your Status Page URL</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <input id="username-input" class="username-input" type="text" placeholder="yourusername" />
         <button class="btn btn-green" onclick="saveUsername()">Save</button>
-        <button class="btn btn-gray" onclick="copyStatusUrl()">📋 Copy Link</button>
+        <button class="btn btn-gray" onclick="copyStatusUrl()">ðŸ“‹ Copy Link</button>
       </div>
       <div style="font-size:12px;color:#4ade80;margin-top:6px;" id="status-url-preview"></div>
     </div>
   </div>
 
   <div class="log-card" style="margin-top:16px;">
-    <div class="section-title">📊 Usage</div>
+    <div class="section-title">ðŸ“Š Usage</div>
     <div id="usage-info"></div>
   </div>
 </div>
@@ -224,11 +224,11 @@
 <!-- LOGS TAB -->
 <div class="tab-content" id="tab-logs">
   <div class="log-card">
-    <div class="section-title">📋 Recent Uptime Logs</div>
+    <div class="section-title">ðŸ“‹ Recent Uptime Logs</div>
     <div id="uptime-table"><div class="loading">Loading logs...</div></div>
   </div>
   <div class="log-card">
-    <div class="section-title">🔧 Fix History</div>
+    <div class="section-title">ðŸ”§ Fix History</div>
     <div id="fix-table"><div class="loading">Loading fix logs...</div></div>
   </div>
 </div>
@@ -391,7 +391,7 @@
     const pct = Math.min((count / limit) * 100, 100);
     const fillClass = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "";
     document.getElementById("site-limit-info").innerHTML = `
-      <div style="font-size:12px;color:#888;">Sites used: <strong style="color:#fff;">${count}/${plan === "pro" ? "∞" : limit}</strong></div>
+      <div style="font-size:12px;color:#888;">Sites used: <strong style="color:#fff;">${count}/${plan === "pro" ? "âˆž" : limit}</strong></div>
       ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : ""}
     `;
     if (!Array.isArray(sites) || !sites.length) {
@@ -406,9 +406,9 @@
         </div>
         <div class="site-actions">
           <button class="btn ${site.active ? 'btn-yellow' : 'btn-green'}" onclick="toggleSite('${site.id}', ${site.active})">
-            ${site.active ? '⏸ Pause' : '▶ Resume'}
+            ${site.active ? 'â¸ Pause' : 'â–¶ Resume'}
           </button>
-          <button class="btn btn-red" onclick="removeSite('${site.id}', '${site.name}')">🗑 Remove</button>
+          <button class="btn btn-red" onclick="removeSite('${site.id}', '${site.name}')">ðŸ—‘ Remove</button>
         </div>
       </div>
     `).join("");
@@ -438,7 +438,7 @@
         body: JSON.stringify({ name, url, active: true, user_id: currentUser?.id })
       });
       if (res.ok || res.status === 201) {
-        showToast(`✅ ${name} added!`);
+        showToast(`âœ… ${name} added!`);
         document.getElementById("input-name").value = "";
         document.getElementById("input-url").value = "";
         loadSitesManager(); loadOverview();
@@ -452,14 +452,14 @@
       method: "PATCH", headers: { ...headers, "Prefer": "return=minimal" },
       body: JSON.stringify({ active: !currentActive })
     });
-    if (res.ok) { showToast(!currentActive ? "▶ Resumed" : "⏸ Paused"); loadSitesManager(); loadOverview(); }
+    if (res.ok) { showToast(!currentActive ? "â–¶ Resumed" : "â¸ Paused"); loadSitesManager(); loadOverview(); }
     else showToast("Failed to update", "error");
   }
 
   async function removeSite(id, name) {
     if (!confirm(`Remove "${name}"?`)) return;
     const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, { method: "DELETE", headers });
-    if (res.ok) { showToast(`🗑 ${name} removed`); loadSitesManager(); loadOverview(); }
+    if (res.ok) { showToast(`ðŸ—‘ ${name} removed`); loadSitesManager(); loadOverview(); }
     else showToast("Failed to remove", "error");
   }
 
@@ -476,7 +476,7 @@
       const count = Array.isArray(members) ? members.length : 0;
 
       document.getElementById("team-limit-info").innerHTML =
-        `Team members: <strong style="color:#fff;">${count}/${teamLimit}</strong>${plan === "pro" ? " · Extra members $2/each" : " · Upgrade to Pro for 5 members"}`;
+        `Team members: <strong style="color:#fff;">${count}/${teamLimit}</strong>${plan === "pro" ? " Â· Extra members $2/each" : " Â· Upgrade to Pro for 5 members"}`;
 
       if (!count) {
         el.innerHTML = '<div class="loading">No team members yet. Invite someone above!</div>';
@@ -513,7 +513,7 @@
       if (plan !== "pro") {
         showToast("Free plan: 2 team members max. Upgrade to Pro for 5!", "error");
       } else {
-        showToast(`Team limit reached (${teamLimit}). Extra members cost $2/each — contact support.`, "error");
+        showToast(`Team limit reached (${teamLimit}). Extra members cost $2/each â€” contact support.`, "error");
       }
       return;
     }
@@ -527,7 +527,7 @@
         body: JSON.stringify({ owner_id: currentUser?.id, member_email: email, status: "pending" })
       });
       if (res.ok || res.status === 201) {
-        showToast(`✅ Invite sent to ${email}!`);
+        showToast(`âœ… Invite sent to ${email}!`);
         document.getElementById("invite-email").value = "";
         loadTeam();
       } else { showToast("Error sending invite", "error"); }
@@ -550,10 +550,10 @@
     document.getElementById("btn-upgrade").style.display = plan === "pro" ? "none" : "block";
 
     document.getElementById("account-info").innerHTML = `
-      <div>👤 Name: <strong>${currentUser?.name}</strong></div>
-      <div>📧 Email: <strong>${currentUser?.email}</strong></div>
-      <div>📋 Plan: <strong>${plan.toUpperCase()}</strong></div>
-      <div>🕒 Member since: <strong>${new Date().toLocaleDateString()}</strong></div>
+      <div>ðŸ‘¤ Name: <strong>${currentUser?.name}</strong></div>
+      <div>ðŸ“§ Email: <strong>${currentUser?.email}</strong></div>
+      <div>ðŸ“‹ Plan: <strong>${plan.toUpperCase()}</strong></div>
+      <div>ðŸ•’ Member since: <strong>${new Date().toLocaleDateString()}</strong></div>
     `;
 
     const username = userMeta?.username || "";
@@ -563,20 +563,20 @@
     const sitesRes = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&active=eq.true`, { headers });
     const sites = await sitesRes.json();
     const count = Array.isArray(sites) ? sites.length : 0;
-    const limit = plan === "pro" ? "∞" : (userMeta?.sites_limit || 3);
+    const limit = plan === "pro" ? "âˆž" : (userMeta?.sites_limit || 3);
     const pct = plan === "pro" ? 0 : Math.min((count / (userMeta?.sites_limit || 3)) * 100, 100);
     const fillClass = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "";
 
     document.getElementById("usage-info").innerHTML = `
       <div style="font-size:13px;color:#888;margin-bottom:8px;">Sites: <strong style="color:#fff;">${count} / ${limit}</strong></div>
-      ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : '<div style="font-size:12px;color:#4ade80;">✅ Unlimited sites on Pro</div>'}
+      ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : '<div style="font-size:12px;color:#4ade80;">âœ… Unlimited sites on Pro</div>'}
     `;
   }
 
   function updateStatusUrlPreview(username) {
     const el = document.getElementById("status-url-preview");
     if (username) {
-      el.innerHTML = `🔗 <a href="https://ai-cto.onrender.com/status.html?u=${username}" target="_blank" style="color:#4ade80;">https://ai-cto.onrender.com/status.html?u=${username}</a>`;
+      el.innerHTML = `ðŸ”— <a href="https://ai-cto.onrender.com/status.html?u=${username}" target="_blank" style="color:#4ade80;">https://ai-cto.onrender.com/status.html?u=${username}</a>`;
     } else {
       el.textContent = "Set a username to get your status page URL";
     }
@@ -593,7 +593,7 @@
       });
       userMeta = { ...userMeta, username };
       updateStatusUrlPreview(username);
-      showToast("✅ Username saved!");
+      showToast("âœ… Username saved!");
     } catch(e) { showToast("Failed to save", "error"); }
   }
 
@@ -602,7 +602,7 @@
     if (!username) { showToast("Set a username first!", "error"); return; }
     const url = `https://ai-cto.onrender.com/status.html?u=${username}`;
     navigator.clipboard.writeText(url);
-    showToast("📋 Link copied!");
+    showToast("ðŸ“‹ Link copied!");
   }
 
   async function upgradePlan() {
@@ -615,7 +615,7 @@
       });
       userMeta = { ...userMeta, plan: "pro", sites_limit: 999, team_limit: 5 };
       updateHeader();
-      showToast("🎉 Upgraded to Pro!");
+      showToast("ðŸŽ‰ Upgraded to Pro!");
       loadAccount();
     } catch(e) { showToast("Upgrade failed", "error"); }
   }
@@ -630,7 +630,7 @@
       ${logs.map(l => `<tr>
         <td>${l.site_url}</td>
         <td><span class="badge ${l.status}">${l.status.toUpperCase()}</span></td>
-        <td>${l.response_time ? l.response_time + "ms" : "—"}</td>
+        <td>${l.response_time ? l.response_time + "ms" : "â€”"}</td>
         <td>${new Date(l.checked_at).toLocaleString()}</td>
       </tr>`).join("")}
     </table>`;
@@ -645,9 +645,9 @@
       <tr><th>Site</th><th>Error</th><th>Fix</th><th>Deployed</th><th>Time</th></tr>
       ${logs.map(l => `<tr>
         <td>${l.site_url}</td>
-        <td style="color:#f87171;">${l.error || "—"}</td>
-        <td style="color:#4ade80;">${l.fix || "—"}</td>
-        <td>${l.deployed ? "✅" : "⏳"}</td>
+        <td style="color:#f87171;">${l.error || "â€”"}</td>
+        <td style="color:#4ade80;">${l.fix || "â€”"}</td>
+        <td>${l.deployed ? "âœ…" : "â³"}</td>
         <td>${new Date(l.created_at).toLocaleString()}</td>
       </tr>`).join("")}
     </table>`;
