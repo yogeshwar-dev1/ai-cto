@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="36">
+  <rect width="200" height="36" rx="6" fill="#1a1a1a" stroke="#2a2a2a" stroke-width="1"/>
+  <rect width="36" height="36" rx="6" fill="#0d2e1a"/>
+  <text x="18" y="24" font-family="Segoe UI, Arial" font-size="16" text-anchor="middle" fill="#4ade80">✓</text>
+  <text x="120" y="14" font-family="Segoe UI, Arial" font-size="10" fill="#888" text-anchor="middle">MONITORED BY</text>
+  <text x="120" y="28" font-family="Segoe UI, Arial" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">🤖 AI CTO</text>
+</svg>
