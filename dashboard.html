@@ -41,7 +41,6 @@
     .btn-red { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; }
     .btn-green { background: #0d2e1a; border: 1px solid #4ade80; color: #4ade80; }
     .btn-green:hover { background: #1a3e2a; }
-    .btn-purple { background: #1a1a2e; border: 1px solid #818cf8; color: #818cf8; }
     .btn-yellow { background: #2a2010; border: 1px solid #facc15; color: #facc15; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .dot.up { background: #4ade80; }
@@ -155,6 +154,7 @@
 <div class="tab-content" id="tab-team">
   <div class="invite-form">
     <div class="section-title">➕ Invite Teammate</div>
+    <div id="team-limit-info" style="margin-bottom:12px;font-size:12px;color:#888;"></div>
     <div class="form-row">
       <div class="form-group">
         <label>Email Address</label>
@@ -180,6 +180,7 @@
         <li>5-minute checks</li>
         <li>Email alerts</li>
         <li>7-day log history</li>
+        <li>2 team members</li>
       </ul>
       <button class="btn btn-gray" id="btn-free" disabled>Current Plan</button>
     </div>
@@ -191,9 +192,10 @@
         <li>1-minute checks</li>
         <li>SMS + Email alerts</li>
         <li>90-day log history</li>
-        <li>Team members</li>
+        <li>5 team members</li>
         <li>Auto-fix AI</li>
         <li>Custom domain</li>
+        <li>Extra members $2/each</li>
       </ul>
       <button class="btn btn-green" id="btn-upgrade" onclick="upgradePlan()">Upgrade to Pro</button>
     </div>
@@ -305,10 +307,11 @@
             email: currentUser.email,
             name: currentUser.name,
             plan: "free",
-            sites_limit: 3
+            sites_limit: 3,
+            team_limit: 2
           })
         });
-        userMeta = { plan: "free", sites_limit: 3 };
+        userMeta = { plan: "free", sites_limit: 3, team_limit: 2 };
       }
     } catch(e) {}
   }
@@ -468,7 +471,14 @@
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/teams?owner_id=eq.${currentUser?.id}&order=created_at.desc`, { headers });
       const members = await res.json();
-      if (!members.length) {
+      const plan = userMeta?.plan || "free";
+      const teamLimit = plan === "pro" ? (userMeta?.team_limit || 5) : 2;
+      const count = Array.isArray(members) ? members.length : 0;
+
+      document.getElementById("team-limit-info").innerHTML =
+        `Team members: <strong style="color:#fff;">${count}/${teamLimit}</strong>${plan === "pro" ? " · Extra members $2/each" : " · Upgrade to Pro for 5 members"}`;
+
+      if (!count) {
         el.innerHTML = '<div class="loading">No team members yet. Invite someone above!</div>';
         return;
       }
@@ -492,11 +502,22 @@
   async function inviteMember() {
     const email = document.getElementById("invite-email").value.trim();
     if (!email) { showToast("Enter an email address", "error"); return; }
+
+    const countRes = await fetch(`${SUPABASE_URL}/rest/v1/teams?owner_id=eq.${currentUser?.id}`, { headers });
+    const members = await countRes.json();
+    const count = Array.isArray(members) ? members.length : 0;
     const plan = userMeta?.plan || "free";
-    if (plan !== "pro") {
-      showToast("Team members require Pro plan!", "error");
+    const teamLimit = plan === "pro" ? (userMeta?.team_limit || 5) : 2;
+
+    if (count >= teamLimit) {
+      if (plan !== "pro") {
+        showToast("Free plan: 2 team members max. Upgrade to Pro for 5!", "error");
+      } else {
+        showToast(`Team limit reached (${teamLimit}). Extra members cost $2/each — contact support.`, "error");
+      }
       return;
     }
+
     const btn = document.getElementById("btn-invite");
     btn.disabled = true; btn.textContent = "Inviting...";
     try {
@@ -590,9 +611,9 @@
       await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser?.id}`, {
         method: "PATCH",
         headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({ plan: "pro", sites_limit: 999 })
+        body: JSON.stringify({ plan: "pro", sites_limit: 999, team_limit: 5 })
       });
-      userMeta = { ...userMeta, plan: "pro", sites_limit: 999 };
+      userMeta = { ...userMeta, plan: "pro", sites_limit: 999, team_limit: 5 };
       updateHeader();
       showToast("🎉 Upgraded to Pro!");
       loadAccount();
