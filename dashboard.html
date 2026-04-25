@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -22,6 +22,8 @@
     .badge.paused { background: #2a2010; color: #facc15; }
     .badge.free { background: #1a1a2e; color: #818cf8; }
     .badge.pro { background: #1a2e1a; color: #4ade80; }
+    .badge.resolved { background: #0d2e1a; color: #4ade80; }
+    .badge.investigating { background: #2e0d0d; color: #f87171; }
     .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stat { background: #111; border-radius: 8px; padding: 10px 12px; }
     .stat-val { font-size: 20px; font-weight: 600; }
@@ -41,6 +43,7 @@
     .btn-red { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; }
     .btn-green { background: #0d2e1a; border: 1px solid #4ade80; color: #4ade80; }
     .btn-green:hover { background: #1a3e2a; }
+    .btn-purple { background: #1a1a2e; border: 1px solid #818cf8; color: #818cf8; }
     .btn-yellow { background: #2a2010; border: 1px solid #facc15; color: #facc15; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .dot.up { background: #4ade80; }
@@ -81,7 +84,7 @@
     .plan-price { font-size: 28px; font-weight: 700; color: #4ade80; margin-bottom: 16px; }
     .plan-features { list-style: none; margin-bottom: 20px; }
     .plan-features li { padding: 6px 0; font-size: 13px; color: #ccc; }
-    .plan-features li::before { content: "âœ… "; }
+    .plan-features li::before { content: "✅ "; }
     .invite-form { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
     .member-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
     .member-row:last-child { border-bottom: none; }
@@ -89,31 +92,29 @@
     .limit-fill { background: #4ade80; border-radius: 4px; height: 6px; transition: width 0.3s; }
     .limit-fill.warning { background: #facc15; }
     .limit-fill.danger { background: #f87171; }
-    .username-input { background: #111; border: 1px solid #2a2a2a; color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 13px; outline: none; flex: 1; }
-    .username-input:focus { border-color: #4ade80; }
   </style>
 </head>
 <body>
 
 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
   <div>
-    <h1>ðŸ¤– AI CTO Dashboard</h1>
+    <h1>🤖 AI CTO Dashboard</h1>
     <div class="subtitle" id="last-updated">Loading...</div>
   </div>
   <div style="display:flex; align-items:center; gap:8px;">
     <span class="welcome" id="welcome-msg"></span>
     <span class="badge free" id="plan-badge">FREE</span>
-    <button class="btn btn-gray" id="refresh-btn">â†» Refresh</button>
+    <button class="btn btn-gray" id="refresh-btn">↻ Refresh</button>
     <button class="btn btn-red" id="logout-btn">Logout</button>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" data-tab="overview">ðŸ“Š Overview</div>
-  <div class="tab" data-tab="sites">ðŸŒ Manage Sites</div>
-  <div class="tab" data-tab="team">ðŸ‘¥ Team</div>
-  <div class="tab" data-tab="account">âš™ï¸ Account</div>
-  <div class="tab" data-tab="logs">ðŸ“‹ Logs</div>
+  <div class="tab active" data-tab="overview">📊 Overview</div>
+  <div class="tab" data-tab="sites">🌐 Manage Sites</div>
+  <div class="tab" data-tab="team">👥 Team</div>
+  <div class="tab" data-tab="account">⚙️ Account</div>
+  <div class="tab" data-tab="logs">📋 Logs</div>
 </div>
 
 <!-- OVERVIEW TAB -->
@@ -122,7 +123,7 @@
     <div class="loading">Loading sites...</div>
   </div>
   <div class="log-card">
-    <div class="section-title">ðŸ“ˆ Response Time Graph</div>
+    <div class="section-title">📈 Response Time Graph</div>
     <canvas id="responseChart" height="100"></canvas>
   </div>
 </div>
@@ -130,7 +131,7 @@
 <!-- MANAGE SITES TAB -->
 <div class="tab-content" id="tab-sites">
   <div class="add-site-form">
-    <div class="section-title">âž• Add New Site</div>
+    <div class="section-title">➕ Add New Site</div>
     <div id="site-limit-info" style="margin-bottom:12px;"></div>
     <div class="form-row">
       <div class="form-group">
@@ -144,7 +145,7 @@
       <button class="btn-add" id="btn-add-site">Add Site</button>
     </div>
   </div>
-  <div class="section-title">ðŸŒ Your Sites</div>
+  <div class="section-title">🌐 Your Sites</div>
   <div class="sites-list" id="sites-manager-list">
     <div class="loading">Loading...</div>
   </div>
@@ -153,8 +154,7 @@
 <!-- TEAM TAB -->
 <div class="tab-content" id="tab-team">
   <div class="invite-form">
-    <div class="section-title">âž• Invite Teammate</div>
-    <div id="team-limit-info" style="margin-bottom:12px;font-size:12px;color:#888;"></div>
+    <div class="section-title">➕ Invite Teammate</div>
     <div class="form-row">
       <div class="form-group">
         <label>Email Address</label>
@@ -163,7 +163,7 @@
       <button class="btn-add" id="btn-invite">Send Invite</button>
     </div>
   </div>
-  <div class="section-title">ðŸ‘¥ Team Members</div>
+  <div class="section-title">👥 Team Members</div>
   <div class="log-card" id="team-list">
     <div class="loading">Loading team...</div>
   </div>
@@ -180,43 +180,29 @@
         <li>5-minute checks</li>
         <li>Email alerts</li>
         <li>7-day log history</li>
-        <li>2 team members</li>
       </ul>
       <button class="btn btn-gray" id="btn-free" disabled>Current Plan</button>
     </div>
     <div class="plan-card pro">
-      <div class="plan-title">Pro Plan âš¡</div>
+      <div class="plan-title">Pro Plan ⚡</div>
       <div class="plan-price">$9<span style="font-size:14px;color:#888;">/mo</span></div>
       <ul class="plan-features">
         <li>Unlimited sites</li>
         <li>1-minute checks</li>
         <li>SMS + Email alerts</li>
         <li>90-day log history</li>
-        <li>5 team members</li>
+        <li>Team members</li>
         <li>Auto-fix AI</li>
-        <li>Custom domain</li>
-        <li>Extra members $2/each</li>
       </ul>
       <button class="btn btn-green" id="btn-upgrade" onclick="upgradePlan()">Upgrade to Pro</button>
     </div>
   </div>
-
   <div class="log-card">
-    <div class="section-title">ðŸ‘¤ Account Info</div>
+    <div class="section-title">👤 Account Info</div>
     <div id="account-info" style="font-size:13px; color:#ccc; line-height:2;"></div>
-    <div style="margin-top:16px;">
-      <div style="font-size:12px;color:#888;margin-bottom:6px;">Your Status Page URL</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <input id="username-input" class="username-input" type="text" placeholder="yourusername" />
-        <button class="btn btn-green" onclick="saveUsername()">Save</button>
-        <button class="btn btn-gray" onclick="copyStatusUrl()">ðŸ“‹ Copy Link</button>
-      </div>
-      <div style="font-size:12px;color:#4ade80;margin-top:6px;" id="status-url-preview"></div>
-    </div>
   </div>
-
   <div class="log-card" style="margin-top:16px;">
-    <div class="section-title">ðŸ“Š Usage</div>
+    <div class="section-title">📊 Usage</div>
     <div id="usage-info"></div>
   </div>
 </div>
@@ -224,11 +210,11 @@
 <!-- LOGS TAB -->
 <div class="tab-content" id="tab-logs">
   <div class="log-card">
-    <div class="section-title">ðŸ“‹ Recent Uptime Logs</div>
+    <div class="section-title">📋 Recent Uptime Logs</div>
     <div id="uptime-table"><div class="loading">Loading logs...</div></div>
   </div>
   <div class="log-card">
-    <div class="section-title">ðŸ”§ Fix History</div>
+    <div class="section-title">🔧 Fix History</div>
     <div id="fix-table"><div class="loading">Loading fix logs...</div></div>
   </div>
 </div>
@@ -248,6 +234,39 @@
   let currentUser = null;
   let userMeta = null;
 
+  // White-label branding
+  async function loadBranding() {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("brand");
+    if (!slug) return;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/brands?slug=eq.${slug}&limit=1`, { headers });
+      const data = await res.json();
+      if (!data.length) return;
+      const brand = data[0];
+      document.title = `${brand.name} Dashboard`;
+      document.querySelector("h1").textContent = `${brand.name}`;
+      document.querySelector(".subtitle") && (document.querySelector(".subtitle").textContent = "Powered by AI CTO");
+      if (brand.primary_color) {
+        document.documentElement.style.setProperty("--brand-color", brand.primary_color);
+        const style = document.createElement("style");
+        style.textContent = `
+          .badge.up, .uptime-good { color: ${brand.primary_color} !important; }
+          .btn-green, .btn-add, .tab.active { border-color: ${brand.primary_color} !important; color: ${brand.primary_color} !important; }
+          .btn-add { background: ${brand.primary_color} !important; color: #000 !important; }
+          .tab.active { border-bottom-color: ${brand.primary_color} !important; }
+        `;
+        document.head.appendChild(style);
+      }
+      if (brand.logo_url) {
+        const logo = document.createElement("img");
+        logo.src = brand.logo_url;
+        logo.style.cssText = "height:32px;border-radius:6px;margin-right:8px;vertical-align:middle;";
+        document.querySelector("h1").prepend(logo);
+      }
+    } catch(e) {}
+  }
+
   function showToast(msg, type = "success") {
     const t = document.getElementById("toast");
     t.textContent = msg;
@@ -255,6 +274,7 @@
     setTimeout(() => t.className = "toast", 3000);
   }
 
+  // Auth
   async function initUser() {
     const localUser = JSON.parse(localStorage.getItem("aicto_user") || "null");
     if (localUser) {
@@ -302,16 +322,9 @@
         await fetch(`${SUPABASE_URL}/rest/v1/users_meta`, {
           method: "POST",
           headers: { ...headers, "Prefer": "return=minimal" },
-          body: JSON.stringify({
-            id: currentUser.id,
-            email: currentUser.email,
-            name: currentUser.name,
-            plan: "free",
-            sites_limit: 3,
-            team_limit: 2
-          })
+          body: JSON.stringify({ id: currentUser.id, email: currentUser.email, name: currentUser.name, plan: "free", sites_limit: 3 })
         });
-        userMeta = { plan: "free", sites_limit: 3, team_limit: 2 };
+        userMeta = { plan: "free", sites_limit: 3 };
       }
     } catch(e) {}
   }
@@ -325,6 +338,7 @@
     planBadge.className = `badge ${plan}`;
   }
 
+  // Tabs
   document.querySelectorAll(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -338,6 +352,7 @@
     });
   });
 
+  // Overview
   async function fetchStats(siteUrl) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=100`, { headers });
     const logs = await res.json();
@@ -380,6 +395,7 @@
     }
   }
 
+  // Manage Sites
   async function loadSitesManager() {
     const el = document.getElementById("sites-manager-list");
     el.innerHTML = '<div class="loading">Loading...</div>';
@@ -391,7 +407,7 @@
     const pct = Math.min((count / limit) * 100, 100);
     const fillClass = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "";
     document.getElementById("site-limit-info").innerHTML = `
-      <div style="font-size:12px;color:#888;">Sites used: <strong style="color:#fff;">${count}/${plan === "pro" ? "âˆž" : limit}</strong></div>
+      <div style="font-size:12px;color:#888;">Sites used: <strong style="color:#fff;">${count}/${plan === "pro" ? "∞" : limit}</strong></div>
       ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : ""}
     `;
     if (!Array.isArray(sites) || !sites.length) {
@@ -406,9 +422,9 @@
         </div>
         <div class="site-actions">
           <button class="btn ${site.active ? 'btn-yellow' : 'btn-green'}" onclick="toggleSite('${site.id}', ${site.active})">
-            ${site.active ? 'â¸ Pause' : 'â–¶ Resume'}
+            ${site.active ? '⏸ Pause' : '▶ Resume'}
           </button>
-          <button class="btn btn-red" onclick="removeSite('${site.id}', '${site.name}')">ðŸ—‘ Remove</button>
+          <button class="btn btn-red" onclick="removeSite('${site.id}', '${site.name}')">🗑 Remove</button>
         </div>
       </div>
     `).join("");
@@ -425,7 +441,7 @@
       const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&active=eq.true`, { headers });
       const sites = await res.json();
       if (sites.length >= limit) {
-        showToast(`Free plan limit: ${limit} sites. Upgrade to Pro!`, "error");
+        showToast(`Free plan limit: ${limit} sites. Upgrade to Pro for unlimited!`, "error");
         return;
       }
     }
@@ -438,7 +454,7 @@
         body: JSON.stringify({ name, url, active: true, user_id: currentUser?.id })
       });
       if (res.ok || res.status === 201) {
-        showToast(`âœ… ${name} added!`);
+        showToast(`✅ ${name} added!`);
         document.getElementById("input-name").value = "";
         document.getElementById("input-url").value = "";
         loadSitesManager(); loadOverview();
@@ -452,36 +468,27 @@
       method: "PATCH", headers: { ...headers, "Prefer": "return=minimal" },
       body: JSON.stringify({ active: !currentActive })
     });
-    if (res.ok) { showToast(!currentActive ? "â–¶ Resumed" : "â¸ Paused"); loadSitesManager(); loadOverview(); }
+    if (res.ok) { showToast(!currentActive ? "▶ Resumed" : "⏸ Paused"); loadSitesManager(); loadOverview(); }
     else showToast("Failed to update", "error");
   }
 
   async function removeSite(id, name) {
     if (!confirm(`Remove "${name}"?`)) return;
     const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, { method: "DELETE", headers });
-    if (res.ok) { showToast(`ðŸ—‘ ${name} removed`); loadSitesManager(); loadOverview(); }
+    if (res.ok) { showToast(`🗑 ${name} removed`); loadSitesManager(); loadOverview(); }
     else showToast("Failed to remove", "error");
   }
 
   document.getElementById("btn-add-site").addEventListener("click", addSite);
 
+  // Team
   async function loadTeam() {
     const el = document.getElementById("team-list");
     el.innerHTML = '<div class="loading">Loading...</div>';
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/teams?owner_id=eq.${currentUser?.id}&order=created_at.desc`, { headers });
       const members = await res.json();
-      const plan = userMeta?.plan || "free";
-      const teamLimit = plan === "pro" ? (userMeta?.team_limit || 5) : 2;
-      const count = Array.isArray(members) ? members.length : 0;
-
-      document.getElementById("team-limit-info").innerHTML =
-        `Team members: <strong style="color:#fff;">${count}/${teamLimit}</strong>${plan === "pro" ? " Â· Extra members $2/each" : " Â· Upgrade to Pro for 5 members"}`;
-
-      if (!count) {
-        el.innerHTML = '<div class="loading">No team members yet. Invite someone above!</div>';
-        return;
-      }
+      if (!members.length) { el.innerHTML = '<div class="loading">No team members yet. Invite someone above!</div>'; return; }
       el.innerHTML = members.map(m => `
         <div class="member-row">
           <div>
@@ -494,30 +501,14 @@
           </div>
         </div>
       `).join("");
-    } catch(e) {
-      el.innerHTML = '<div class="loading">Error loading team</div>';
-    }
+    } catch(e) { el.innerHTML = '<div class="loading">Error loading team</div>'; }
   }
 
   async function inviteMember() {
     const email = document.getElementById("invite-email").value.trim();
     if (!email) { showToast("Enter an email address", "error"); return; }
-
-    const countRes = await fetch(`${SUPABASE_URL}/rest/v1/teams?owner_id=eq.${currentUser?.id}`, { headers });
-    const members = await countRes.json();
-    const count = Array.isArray(members) ? members.length : 0;
     const plan = userMeta?.plan || "free";
-    const teamLimit = plan === "pro" ? (userMeta?.team_limit || 5) : 2;
-
-    if (count >= teamLimit) {
-      if (plan !== "pro") {
-        showToast("Free plan: 2 team members max. Upgrade to Pro for 5!", "error");
-      } else {
-        showToast(`Team limit reached (${teamLimit}). Extra members cost $2/each â€” contact support.`, "error");
-      }
-      return;
-    }
-
+    if (plan !== "pro") { showToast("Team members require Pro plan. Upgrade to invite teammates!", "error"); return; }
     const btn = document.getElementById("btn-invite");
     btn.disabled = true; btn.textContent = "Inviting...";
     try {
@@ -527,7 +518,7 @@
         body: JSON.stringify({ owner_id: currentUser?.id, member_email: email, status: "pending" })
       });
       if (res.ok || res.status === 201) {
-        showToast(`âœ… Invite sent to ${email}!`);
+        showToast(`✅ Invite sent to ${email}!`);
         document.getElementById("invite-email").value = "";
         loadTeam();
       } else { showToast("Error sending invite", "error"); }
@@ -544,82 +535,45 @@
 
   document.getElementById("btn-invite").addEventListener("click", inviteMember);
 
+  // Account
   async function loadAccount() {
     const plan = userMeta?.plan || "free";
     document.getElementById("btn-free").disabled = plan === "free";
     document.getElementById("btn-upgrade").style.display = plan === "pro" ? "none" : "block";
-
     document.getElementById("account-info").innerHTML = `
-      <div>ðŸ‘¤ Name: <strong>${currentUser?.name}</strong></div>
-      <div>ðŸ“§ Email: <strong>${currentUser?.email}</strong></div>
-      <div>ðŸ“‹ Plan: <strong>${plan.toUpperCase()}</strong></div>
-      <div>ðŸ•’ Member since: <strong>${new Date().toLocaleDateString()}</strong></div>
+      <div>👤 Name: <strong>${currentUser?.name}</strong></div>
+      <div>📧 Email: <strong>${currentUser?.email}</strong></div>
+      <div>📋 Plan: <strong>${plan.toUpperCase()}</strong></div>
+      <div>🕒 Member since: <strong>${new Date().toLocaleDateString()}</strong></div>
     `;
-
-    const username = userMeta?.username || "";
-    document.getElementById("username-input").value = username;
-    updateStatusUrlPreview(username);
-
     const sitesRes = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&active=eq.true`, { headers });
     const sites = await sitesRes.json();
     const count = Array.isArray(sites) ? sites.length : 0;
-    const limit = plan === "pro" ? "âˆž" : (userMeta?.sites_limit || 3);
+    const limit = plan === "pro" ? "∞" : (userMeta?.sites_limit || 3);
     const pct = plan === "pro" ? 0 : Math.min((count / (userMeta?.sites_limit || 3)) * 100, 100);
     const fillClass = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "";
-
     document.getElementById("usage-info").innerHTML = `
       <div style="font-size:13px;color:#888;margin-bottom:8px;">Sites: <strong style="color:#fff;">${count} / ${limit}</strong></div>
-      ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : '<div style="font-size:12px;color:#4ade80;">âœ… Unlimited sites on Pro</div>'}
+      ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : '<div style="font-size:12px;color:#4ade80;">✅ Unlimited sites on Pro</div>'}
     `;
   }
 
-  function updateStatusUrlPreview(username) {
-    const el = document.getElementById("status-url-preview");
-    if (username) {
-      el.innerHTML = `ðŸ”— <a href="https://ai-cto.onrender.com/status.html?u=${username}" target="_blank" style="color:#4ade80;">https://ai-cto.onrender.com/status.html?u=${username}</a>`;
-    } else {
-      el.textContent = "Set a username to get your status page URL";
-    }
-  }
-
-  async function saveUsername() {
-    const username = document.getElementById("username-input").value.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-    if (!username) { showToast("Enter a valid username", "error"); return; }
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser?.id}`, {
-        method: "PATCH",
-        headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({ username })
-      });
-      userMeta = { ...userMeta, username };
-      updateStatusUrlPreview(username);
-      showToast("âœ… Username saved!");
-    } catch(e) { showToast("Failed to save", "error"); }
-  }
-
-  function copyStatusUrl() {
-    const username = userMeta?.username || "";
-    if (!username) { showToast("Set a username first!", "error"); return; }
-    const url = `https://ai-cto.onrender.com/status.html?u=${username}`;
-    navigator.clipboard.writeText(url);
-    showToast("ðŸ“‹ Link copied!");
-  }
-
   async function upgradePlan() {
-    if (!confirm("Upgrade to Pro plan for $9/month?")) return;
+    if (!confirm("Upgrade to Pro plan for $9/month? (This is a demo — no payment will be charged)")) return;
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser?.id}`, {
         method: "PATCH",
         headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({ plan: "pro", sites_limit: 999, team_limit: 5 })
+        body: JSON.stringify({ plan: "pro", sites_limit: 999 })
       });
-      userMeta = { ...userMeta, plan: "pro", sites_limit: 999, team_limit: 5 };
+      userMeta = { ...userMeta, plan: "pro", sites_limit: 999 };
       updateHeader();
-      showToast("ðŸŽ‰ Upgraded to Pro!");
+      showToast("🎉 Upgraded to Pro!");
       loadAccount();
     } catch(e) { showToast("Upgrade failed", "error"); }
   }
 
+  // Logs
   async function loadUptimeLogs() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=20`, { headers });
     const logs = await res.json();
@@ -630,7 +584,7 @@
       ${logs.map(l => `<tr>
         <td>${l.site_url}</td>
         <td><span class="badge ${l.status}">${l.status.toUpperCase()}</span></td>
-        <td>${l.response_time ? l.response_time + "ms" : "â€”"}</td>
+        <td>${l.response_time ? l.response_time + "ms" : "—"}</td>
         <td>${new Date(l.checked_at).toLocaleString()}</td>
       </tr>`).join("")}
     </table>`;
@@ -645,14 +599,15 @@
       <tr><th>Site</th><th>Error</th><th>Fix</th><th>Deployed</th><th>Time</th></tr>
       ${logs.map(l => `<tr>
         <td>${l.site_url}</td>
-        <td style="color:#f87171;">${l.error || "â€”"}</td>
-        <td style="color:#4ade80;">${l.fix || "â€”"}</td>
-        <td>${l.deployed ? "âœ…" : "â³"}</td>
+        <td style="color:#f87171;">${l.error || "—"}</td>
+        <td style="color:#4ade80;">${l.fix || "—"}</td>
+        <td>${l.deployed ? "✅" : "⏳"}</td>
         <td>${new Date(l.created_at).toLocaleString()}</td>
       </tr>`).join("")}
     </table>`;
   }
 
+  // Chart
   let chartInstance = null;
   async function loadChart() {
     try {
@@ -693,8 +648,8 @@
     window.location.href = "auth.html";
   });
 
+  loadBranding();
   initUser().then(ok => { if (ok) { loadAll(); setInterval(loadAll, 30000); } });
 </script>
 </body>
 </html>
-
