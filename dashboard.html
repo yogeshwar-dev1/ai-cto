@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI CTO Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; padding: 24px; }
@@ -43,14 +44,13 @@
     .btn-red { background: #2e0d0d; border: 1px solid #f87171; color: #f87171; }
     .btn-green { background: #0d2e1a; border: 1px solid #4ade80; color: #4ade80; }
     .btn-green:hover { background: #1a3e2a; }
-    .btn-purple { background: #1a1a2e; border: 1px solid #818cf8; color: #818cf8; }
     .btn-yellow { background: #2a2010; border: 1px solid #facc15; color: #facc15; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .dot.up { background: #4ade80; }
     .dot.down { background: #f87171; }
     .dot.paused { background: #facc15; }
     .dot.unknown { background: #888; }
-    .welcome { color: #4ade80; font-size: 13px; margin-right: 8px; }
+    .welcome { color: #4ade80; font-size: 13px; }
     .tabs { display: flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid #2a2a2a; }
     .tab { padding: 10px 20px; cursor: pointer; font-size: 14px; color: #888; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
     .tab:hover { color: #fff; }
@@ -74,7 +74,7 @@
     .site-info .name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
     .site-info .url { font-size: 12px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .site-actions { display: flex; gap: 8px; flex-shrink: 0; }
-    .toast { position: fixed; bottom: 24px; right: 24px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 20px; font-size: 13px; color: #fff; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 20px; font-size: 13px; color: #fff; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
     .toast.show { opacity: 1; }
     .toast.success { border-color: #4ade80; color: #4ade80; }
     .toast.error { border-color: #f87171; color: #f87171; }
@@ -92,18 +92,87 @@
     .limit-fill { background: #4ade80; border-radius: 4px; height: 6px; transition: width 0.3s; }
     .limit-fill.warning { background: #facc15; }
     .limit-fill.danger { background: #f87171; }
+
+    /* Timer */
+    #timer-badge {
+      font-size: 12px; font-weight: 600;
+      padding: 5px 14px; border-radius: 20px;
+      border: 1px solid #facc15;
+      background: #2a2010; color: #facc15;
+      display: inline-block;
+    }
+    #timer-badge.low { border-color: #f87171; background: #2e0d0d; color: #f87171; }
+    #timer-badge.hidden { display: none; }
+
+    /* Lock */
+    #dashboard-lock {
+      display: none; position: fixed; inset: 0;
+      backdrop-filter: blur(6px);
+      background: rgba(0,0,0,0.6);
+      z-index: 9000;
+    }
+
+    /* Modal */
+    #upgrade-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 10000;
+      align-items: center; justify-content: center;
+    }
+    #upgrade-overlay.show { display: flex; }
+    #upgrade-modal {
+      background: #1a1a1a; border: 1px solid #4ade80;
+      border-radius: 16px; padding: 36px 32px;
+      max-width: 420px; width: 90%; text-align: center;
+      animation: popIn 0.25s ease;
+    }
+    @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    #upgrade-modal h2 { font-size: 22px; margin-bottom: 10px; }
+    #upgrade-modal p { color: #888; font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+    .modal-price { font-size: 32px; font-weight: 700; color: #4ade80; margin-bottom: 4px; }
+    .modal-sub { font-size: 12px; color: #888; margin-bottom: 20px; }
+    #upgrade-modal ul { list-style: none; text-align: left; margin-bottom: 24px; }
+    #upgrade-modal ul li { padding: 5px 0; font-size: 13px; color: #ccc; }
+    #upgrade-modal ul li::before { content: "⚡ "; color: #4ade80; }
+    .modal-btn-upgrade { width: 100%; padding: 14px; background: #4ade80; color: #000; font-weight: 700; font-size: 15px; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
+    .modal-btn-upgrade:hover { background: #22c55e; }
+    .modal-btn-close { width: 100%; padding: 10px; background: transparent; color: #555; font-size: 13px; border: none; cursor: pointer; }
+    .modal-btn-close:hover { color: #888; }
   </style>
 </head>
 <body>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
+<div id="dashboard-lock"></div>
+
+<div id="upgrade-overlay">
+  <div id="upgrade-modal">
+    <div style="font-size:40px;margin-bottom:12px;" id="modal-icon">⏱</div>
+    <h2 id="modal-title">Your free session has ended</h2>
+    <p id="modal-desc">You've used your 10-minute free session. Upgrade to Pro for unlimited access with no time limits.</p>
+    <div class="modal-price">₹749<span style="font-size:14px;color:#888;">/mo</span></div>
+    <div class="modal-sub">Billed monthly · Cancel anytime</div>
+    <ul>
+      <li>Unlimited sites (free: 3 max)</li>
+      <li>No session time limits</li>
+      <li>1-minute uptime checks</li>
+      <li>SMS + Email alerts</li>
+      <li>90-day log history</li>
+      <li>Team members &amp; Auto-fix AI</li>
+    </ul>
+    <button class="modal-btn-upgrade" onclick="upgradePlan()">Upgrade to Pro ⚡</button>
+    <button class="modal-btn-close" id="modal-close-btn" onclick="closeUpgradeModal()">Maybe later</button>
+  </div>
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
   <div>
     <h1>🤖 AI CTO Dashboard</h1>
     <div class="subtitle" id="last-updated">Loading...</div>
   </div>
-  <div style="display:flex; align-items:center; gap:8px;">
+  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
     <span class="welcome" id="welcome-msg"></span>
     <span class="badge free" id="plan-badge">FREE</span>
+    <span id="timer-badge" class="hidden">⏱ 10:00 free</span>
     <button class="btn btn-gray" id="refresh-btn">↻ Refresh</button>
     <button class="btn btn-red" id="logout-btn">Logout</button>
   </div>
@@ -117,18 +186,14 @@
   <div class="tab" data-tab="logs">📋 Logs</div>
 </div>
 
-<!-- OVERVIEW TAB -->
 <div class="tab-content active" id="tab-overview">
-  <div id="sites-grid" class="grid">
-    <div class="loading">Loading sites...</div>
-  </div>
+  <div id="sites-grid" class="grid"><div class="loading">Loading sites...</div></div>
   <div class="log-card">
     <div class="section-title">📈 Response Time Graph</div>
     <canvas id="responseChart" height="100"></canvas>
   </div>
 </div>
 
-<!-- MANAGE SITES TAB -->
 <div class="tab-content" id="tab-sites">
   <div class="add-site-form">
     <div class="section-title">➕ Add New Site</div>
@@ -146,12 +211,9 @@
     </div>
   </div>
   <div class="section-title">🌐 Your Sites</div>
-  <div class="sites-list" id="sites-manager-list">
-    <div class="loading">Loading...</div>
-  </div>
+  <div class="sites-list" id="sites-manager-list"><div class="loading">Loading...</div></div>
 </div>
 
-<!-- TEAM TAB -->
 <div class="tab-content" id="tab-team">
   <div class="invite-form">
     <div class="section-title">➕ Invite Teammate</div>
@@ -164,19 +226,17 @@
     </div>
   </div>
   <div class="section-title">👥 Team Members</div>
-  <div class="log-card" id="team-list">
-    <div class="loading">Loading team...</div>
-  </div>
+  <div class="log-card" id="team-list"><div class="loading">Loading team...</div></div>
 </div>
 
-<!-- ACCOUNT TAB -->
 <div class="tab-content" id="tab-account">
-  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px;">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
     <div class="plan-card">
       <div class="plan-title">Free Plan</div>
       <div class="plan-price">$0<span style="font-size:14px;color:#888;">/mo</span></div>
       <ul class="plan-features">
         <li>Up to 3 sites</li>
+        <li>10-min free session</li>
         <li>5-minute checks</li>
         <li>Email alerts</li>
         <li>7-day log history</li>
@@ -185,9 +245,10 @@
     </div>
     <div class="plan-card pro">
       <div class="plan-title">Pro Plan ⚡</div>
-      <div class="plan-price">$9<span style="font-size:14px;color:#888;">/mo</span></div>
+      <div class="plan-price">₹749<span style="font-size:14px;color:#888;">/mo</span></div>
       <ul class="plan-features">
         <li>Unlimited sites</li>
+        <li>No time limits</li>
         <li>1-minute checks</li>
         <li>SMS + Email alerts</li>
         <li>90-day log history</li>
@@ -199,7 +260,7 @@
   </div>
   <div class="log-card">
     <div class="section-title">👤 Account Info</div>
-    <div id="account-info" style="font-size:13px; color:#ccc; line-height:2;"></div>
+    <div id="account-info" style="font-size:13px;color:#ccc;line-height:2;"></div>
   </div>
   <div class="log-card" style="margin-top:16px;">
     <div class="section-title">📊 Usage</div>
@@ -207,7 +268,6 @@
   </div>
 </div>
 
-<!-- LOGS TAB -->
 <div class="tab-content" id="tab-logs">
   <div class="log-card">
     <div class="section-title">📋 Recent Uptime Logs</div>
@@ -224,86 +284,128 @@
 <script>
   const SUPABASE_URL = "https://ictasxeevrlvjkawuuvm.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGFzeGVldnJsdmprYXd1dXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODY5MjIsImV4cCI6MjA5MjI2MjkyMn0.3E2wxnBMfu5fiK6KdxIl-sp6h5grNwdaQLd29HHgNfc";
-
-  const headers = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": `Bearer ${SUPABASE_KEY}`,
-    "Content-Type": "application/json"
-  };
+  const headers = { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" };
 
   let currentUser = null;
   let userMeta = null;
+  const FREE_SITE_LIMIT = 3;
+  const FREE_SESSION_SECONDS = 600; // 10 minutes
+  let timerInterval = null;
+  let sessionExpired = false;
 
-  // White-label branding
-  async function loadBranding() {
-    const params = new URLSearchParams(window.location.search);
-    const slug = params.get("brand");
-    if (!slug) return;
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/brands?slug=eq.${slug}&limit=1`, { headers });
-      const data = await res.json();
-      if (!data.length) return;
-      const brand = data[0];
-      document.title = `${brand.name} Dashboard`;
-      document.querySelector("h1").textContent = `${brand.name}`;
-      document.querySelector(".subtitle") && (document.querySelector(".subtitle").textContent = "Powered by AI CTO");
-      if (brand.primary_color) {
-        document.documentElement.style.setProperty("--brand-color", brand.primary_color);
-        const style = document.createElement("style");
-        style.textContent = `
-          .badge.up, .uptime-good { color: ${brand.primary_color} !important; }
-          .btn-green, .btn-add, .tab.active { border-color: ${brand.primary_color} !important; color: ${brand.primary_color} !important; }
-          .btn-add { background: ${brand.primary_color} !important; color: #000 !important; }
-          .tab.active { border-bottom-color: ${brand.primary_color} !important; }
-        `;
-        document.head.appendChild(style);
+  // ── TIMER ──
+  function getTimerState() {
+    try { return JSON.parse(localStorage.getItem("aicto_timer")) || {}; } catch(e) { return {}; }
+  }
+  function saveTimerState(s) { localStorage.setItem("aicto_timer", JSON.stringify(s)); }
+
+  function startFreeTimer() {
+    if ((userMeta?.plan || "free") === "pro") return;
+
+    const badge = document.getElementById("timer-badge");
+    badge.classList.remove("hidden");
+
+    let state = getTimerState();
+
+    if (state.expired) {
+      sessionExpired = true;
+      badge.textContent = "⏱ 0:00 free";
+      badge.classList.add("low");
+      lockDashboard("timer");
+      return;
+    }
+
+    if (!state.startedAt) {
+      state.startedAt = Date.now();
+      saveTimerState(state);
+    }
+
+    function tick() {
+      const elapsed = Math.floor((Date.now() - state.startedAt) / 1000);
+      const remaining = Math.max(0, FREE_SESSION_SECONDS - elapsed);
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      badge.textContent = "⏱ " + m + ":" + s.toString().padStart(2,"0") + " free";
+      if (remaining <= 120) badge.classList.add("low"); else badge.classList.remove("low");
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
+        state.expired = true;
+        saveTimerState(state);
+        sessionExpired = true;
+        lockDashboard("timer");
       }
-      if (brand.logo_url) {
-        const logo = document.createElement("img");
-        logo.src = brand.logo_url;
-        logo.style.cssText = "height:32px;border-radius:6px;margin-right:8px;vertical-align:middle;";
-        document.querySelector("h1").prepend(logo);
-      }
-    } catch(e) {}
+    }
+    tick();
+    timerInterval = setInterval(tick, 1000);
   }
 
+  // Timer also starts when user adds their FIRST site
+  function checkAndStartTimer() {
+    const state = getTimerState();
+    if (!state.startedAt && !state.expired) {
+      startFreeTimer();
+    }
+  }
+
+  function lockDashboard(reason) {
+    document.getElementById("dashboard-lock").style.display = "block";
+    showUpgradeModal(reason);
+  }
+
+  function showUpgradeModal(reason) {
+    const closeBtn = document.getElementById("modal-close-btn");
+    if (reason === "timer") {
+      document.getElementById("modal-icon").textContent = "⏱";
+      document.getElementById("modal-title").textContent = "Your free session has ended";
+      document.getElementById("modal-desc").textContent = "You've used your 10-minute free session. Upgrade to Pro for unlimited access with no time limits.";
+      closeBtn.style.display = "none";
+    } else {
+      document.getElementById("modal-icon").textContent = "🚫";
+      document.getElementById("modal-title").textContent = "Free site limit reached";
+      document.getElementById("modal-desc").textContent = "You've reached the 3-site limit on the free plan. Upgrade to Pro to add unlimited sites.";
+      closeBtn.style.display = "block";
+    }
+    document.getElementById("upgrade-overlay").classList.add("show");
+  }
+
+  function closeUpgradeModal() {
+    if (sessionExpired) return;
+    document.getElementById("upgrade-overlay").classList.remove("show");
+  }
+
+  function resetTimerOnUpgrade() {
+    localStorage.removeItem("aicto_timer");
+    clearInterval(timerInterval);
+    sessionExpired = false;
+    document.getElementById("timer-badge").classList.add("hidden");
+    document.getElementById("dashboard-lock").style.display = "none";
+    document.getElementById("upgrade-overlay").classList.remove("show");
+  }
+
+  // ── TOAST ──
   function showToast(msg, type = "success") {
     const t = document.getElementById("toast");
     t.textContent = msg;
-    t.className = `toast show ${type}`;
+    t.className = "toast show " + type;
     setTimeout(() => t.className = "toast", 3000);
   }
 
-  // Auth
+  // ── AUTH ──
   async function initUser() {
-    const localUser = JSON.parse(localStorage.getItem("aicto_user") || "null");
-    if (localUser) {
-      currentUser = localUser;
-      await loadUserMeta();
-      updateHeader();
-      return true;
-    }
+    const local = JSON.parse(localStorage.getItem("aicto_user") || "null");
+    if (local) { currentUser = local; await loadUserMeta(); updateHeader(); return true; }
     const hash = window.location.hash;
-    let accessToken = null;
-    if (hash && hash.includes("access_token")) {
-      accessToken = new URLSearchParams(hash.slice(1)).get("access_token");
-    }
-    if (accessToken) {
+    let token = null;
+    if (hash && hash.includes("access_token")) token = new URLSearchParams(hash.slice(1)).get("access_token");
+    if (token) {
       try {
-        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-          headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${accessToken}` }
-        });
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + token } });
         const data = await res.json();
-        if (data && data.email) {
-          currentUser = {
-            name: data.user_metadata?.full_name || data.user_metadata?.name || data.email.split("@")[0],
-            email: data.email, id: data.id
-          };
+        if (data?.email) {
+          currentUser = { name: data.user_metadata?.full_name || data.user_metadata?.name || data.email.split("@")[0], email: data.email, id: data.id };
           localStorage.setItem("aicto_user", JSON.stringify(currentUser));
           window.history.replaceState({}, document.title, window.location.pathname);
-          await loadUserMeta();
-          updateHeader();
-          return true;
+          await loadUserMeta(); updateHeader(); return true;
         }
       } catch(e) {}
     }
@@ -316,29 +418,24 @@
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser.id}`, { headers });
       const data = await res.json();
-      if (data && data.length) {
-        userMeta = data[0];
-      } else {
-        await fetch(`${SUPABASE_URL}/rest/v1/users_meta`, {
-          method: "POST",
-          headers: { ...headers, "Prefer": "return=minimal" },
-          body: JSON.stringify({ id: currentUser.id, email: currentUser.email, name: currentUser.name, plan: "free", sites_limit: 3 })
-        });
-        userMeta = { plan: "free", sites_limit: 3 };
+      if (data?.length) { userMeta = data[0]; }
+      else {
+        await fetch(`${SUPABASE_URL}/rest/v1/users_meta`, { method: "POST", headers: { ...headers, "Prefer": "return=minimal" }, body: JSON.stringify({ id: currentUser.id, email: currentUser.email, name: currentUser.name, plan: "free", sites_limit: FREE_SITE_LIMIT }) });
+        userMeta = { plan: "free", sites_limit: FREE_SITE_LIMIT };
       }
     } catch(e) {}
   }
 
   function updateHeader() {
     if (!currentUser) return;
-    document.getElementById("welcome-msg").textContent = `Hi, ${currentUser.name}!`;
-    const planBadge = document.getElementById("plan-badge");
+    document.getElementById("welcome-msg").textContent = "Hi, " + currentUser.name + "!";
+    const badge = document.getElementById("plan-badge");
     const plan = userMeta?.plan || "free";
-    planBadge.textContent = plan.toUpperCase();
-    planBadge.className = `badge ${plan}`;
+    badge.textContent = plan.toUpperCase();
+    badge.className = "badge " + plan;
   }
 
-  // Tabs
+  // ── TABS ──
   document.querySelectorAll(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -352,7 +449,7 @@
     });
   });
 
-  // Overview
+  // ── OVERVIEW ──
   async function fetchStats(siteUrl) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?site_url=eq.${encodeURIComponent(siteUrl)}&order=checked_at.desc&limit=100`, { headers });
     const logs = await res.json();
@@ -368,52 +465,48 @@
     const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&order=created_at.desc`, { headers });
     const sites = await res.json();
     const grid = document.getElementById("sites-grid");
-    if (!Array.isArray(sites) || !sites.length) {
-      grid.innerHTML = '<div class="loading">No sites yet. Add one in the Manage Sites tab!</div>';
-      return;
-    }
+    if (!Array.isArray(sites) || !sites.length) { grid.innerHTML = '<div class="loading">No sites yet. Add one in the Manage Sites tab!</div>'; return; }
+
+    // Start timer as soon as user has at least 1 site
+    if (sites.length >= 1) checkAndStartTimer();
+
     grid.innerHTML = "";
     for (const site of sites) {
       const stats = site.active ? await fetchStats(site.url) : { uptime: 0, total: 0, avg: 0, status: "paused" };
       const uptimeClass = stats.uptime >= 90 ? "uptime-good" : "uptime-bad";
       const statusLabel = !site.active ? "PAUSED" : stats.status.toUpperCase();
       const statusClass = !site.active ? "paused" : stats.status;
-      grid.innerHTML += `
-        <div class="card">
-          <div class="card-header">
-            <div class="site-name"><span class="dot ${statusClass}"></span>${site.name}</div>
-            <span class="badge ${statusClass}">${statusLabel}</span>
-          </div>
-          <div class="site-url">${site.url}</div>
-          <div class="stats">
-            <div class="stat"><div class="stat-val ${uptimeClass}">${stats.uptime}%</div><div class="stat-lbl">Uptime</div></div>
-            <div class="stat"><div class="stat-val">${stats.avg}ms</div><div class="stat-lbl">Avg Response</div></div>
-            <div class="stat"><div class="stat-val">${stats.total}</div><div class="stat-lbl">Total Checks</div></div>
-            <div class="stat"><div class="stat-val" style="font-size:13px;color:#888;">${new Date(site.created_at).toLocaleDateString()}</div><div class="stat-lbl">Added</div></div>
-          </div>
-        </div>`;
+      grid.innerHTML += `<div class="card">
+        <div class="card-header">
+          <div class="site-name"><span class="dot ${statusClass}"></span>${site.name}</div>
+          <span class="badge ${statusClass}">${statusLabel}</span>
+        </div>
+        <div class="site-url">${site.url}</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-val ${uptimeClass}">${stats.uptime}%</div><div class="stat-lbl">Uptime</div></div>
+          <div class="stat"><div class="stat-val">${stats.avg}ms</div><div class="stat-lbl">Avg Response</div></div>
+          <div class="stat"><div class="stat-val">${stats.total}</div><div class="stat-lbl">Total Checks</div></div>
+          <div class="stat"><div class="stat-val" style="font-size:13px;color:#888;">${new Date(site.created_at).toLocaleDateString()}</div><div class="stat-lbl">Added</div></div>
+        </div>
+      </div>`;
     }
   }
 
-  // Manage Sites
+  // ── MANAGE SITES ──
   async function loadSitesManager() {
     const el = document.getElementById("sites-manager-list");
     el.innerHTML = '<div class="loading">Loading...</div>';
     const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&order=created_at.desc`, { headers });
     const sites = await res.json();
     const plan = userMeta?.plan || "free";
-    const limit = userMeta?.sites_limit || 3;
+    const limit = userMeta?.sites_limit || FREE_SITE_LIMIT;
     const count = Array.isArray(sites) ? sites.length : 0;
     const pct = Math.min((count / limit) * 100, 100);
     const fillClass = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "";
-    document.getElementById("site-limit-info").innerHTML = `
-      <div style="font-size:12px;color:#888;">Sites used: <strong style="color:#fff;">${count}/${plan === "pro" ? "∞" : limit}</strong></div>
-      ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : ""}
-    `;
-    if (!Array.isArray(sites) || !sites.length) {
-      el.innerHTML = '<div class="loading">No sites yet. Add one above!</div>';
-      return;
-    }
+    document.getElementById("site-limit-info").innerHTML =
+      `<div style="font-size:12px;color:#888;">Sites used: <strong style="color:#fff;">${count} / ${plan === "pro" ? "∞" : limit}</strong></div>` +
+      (plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : "");
+    if (!Array.isArray(sites) || !sites.length) { el.innerHTML = '<div class="loading">No sites yet. Add one above!</div>'; return; }
     el.innerHTML = sites.map(site => `
       <div class="site-row">
         <div class="site-info">
@@ -421,13 +514,10 @@
           <div class="url">${site.url}</div>
         </div>
         <div class="site-actions">
-          <button class="btn ${site.active ? 'btn-yellow' : 'btn-green'}" onclick="toggleSite('${site.id}', ${site.active})">
-            ${site.active ? '⏸ Pause' : '▶ Resume'}
-          </button>
-          <button class="btn btn-red" onclick="removeSite('${site.id}', '${site.name}')">🗑 Remove</button>
+          <button class="btn ${site.active ? 'btn-yellow' : 'btn-green'}" onclick="toggleSite('${site.id}',${site.active})">${site.active ? '⏸ Pause' : '▶ Resume'}</button>
+          <button class="btn btn-red" onclick="removeSite('${site.id}','${site.name}')">🗑 Remove</button>
         </div>
-      </div>
-    `).join("");
+      </div>`).join("");
   }
 
   async function addSite() {
@@ -436,27 +526,21 @@
     if (!name || !url) { showToast("Please fill in both fields", "error"); return; }
     if (!url.startsWith("http")) { showToast("URL must start with https://", "error"); return; }
     const plan = userMeta?.plan || "free";
-    const limit = userMeta?.sites_limit || 3;
+    const limit = userMeta?.sites_limit || FREE_SITE_LIMIT;
     if (plan !== "pro") {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&active=eq.true`, { headers });
-      const sites = await res.json();
-      if (sites.length >= limit) {
-        showToast(`Free plan limit: ${limit} sites. Upgrade to Pro for unlimited!`, "error");
-        return;
-      }
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}`, { headers });
+      const existing = await r.json();
+      if (existing.length >= limit) { showUpgradeModal("site_limit"); return; }
     }
     const btn = document.getElementById("btn-add-site");
     btn.disabled = true; btn.textContent = "Adding...";
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/sites`, {
-        method: "POST",
-        headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({ name, url, active: true, user_id: currentUser?.id })
-      });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/sites`, { method: "POST", headers: { ...headers, "Prefer": "return=minimal" }, body: JSON.stringify({ name, url, active: true, user_id: currentUser?.id }) });
       if (res.ok || res.status === 201) {
-        showToast(`✅ ${name} added!`);
+        showToast("✅ " + name + " added!");
         document.getElementById("input-name").value = "";
         document.getElementById("input-url").value = "";
+        checkAndStartTimer(); // Start timer on first site add
         loadSitesManager(); loadOverview();
       } else { showToast("Error adding site", "error"); }
     } catch(e) { showToast("Network error", "error"); }
@@ -464,31 +548,28 @@
   }
 
   async function toggleSite(id, currentActive) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, {
-      method: "PATCH", headers: { ...headers, "Prefer": "return=minimal" },
-      body: JSON.stringify({ active: !currentActive })
-    });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, { method: "PATCH", headers: { ...headers, "Prefer": "return=minimal" }, body: JSON.stringify({ active: !currentActive }) });
     if (res.ok) { showToast(!currentActive ? "▶ Resumed" : "⏸ Paused"); loadSitesManager(); loadOverview(); }
     else showToast("Failed to update", "error");
   }
 
   async function removeSite(id, name) {
-    if (!confirm(`Remove "${name}"?`)) return;
+    if (!confirm('Remove "' + name + '"?')) return;
     const res = await fetch(`${SUPABASE_URL}/rest/v1/sites?id=eq.${id}`, { method: "DELETE", headers });
-    if (res.ok) { showToast(`🗑 ${name} removed`); loadSitesManager(); loadOverview(); }
+    if (res.ok) { showToast("🗑 " + name + " removed"); loadSitesManager(); loadOverview(); }
     else showToast("Failed to remove", "error");
   }
 
   document.getElementById("btn-add-site").addEventListener("click", addSite);
 
-  // Team
+  // ── TEAM ──
   async function loadTeam() {
     const el = document.getElementById("team-list");
     el.innerHTML = '<div class="loading">Loading...</div>';
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/teams?owner_id=eq.${currentUser?.id}&order=created_at.desc`, { headers });
       const members = await res.json();
-      if (!members.length) { el.innerHTML = '<div class="loading">No team members yet. Invite someone above!</div>'; return; }
+      if (!members.length) { el.innerHTML = '<div class="loading">No team members yet.</div>'; return; }
       el.innerHTML = members.map(m => `
         <div class="member-row">
           <div>
@@ -497,97 +578,88 @@
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
             <span class="badge ${m.status === 'accepted' ? 'up' : 'unknown'}">${m.status.toUpperCase()}</span>
-            <button class="btn btn-red" onclick="removeMember('${m.id}', '${m.member_email}')">Remove</button>
+            <button class="btn btn-red" onclick="removeMember('${m.id}','${m.member_email}')">Remove</button>
           </div>
-        </div>
-      `).join("");
+        </div>`).join("");
     } catch(e) { el.innerHTML = '<div class="loading">Error loading team</div>'; }
   }
 
   async function inviteMember() {
     const email = document.getElementById("invite-email").value.trim();
     if (!email) { showToast("Enter an email address", "error"); return; }
-    const plan = userMeta?.plan || "free";
-    if (plan !== "pro") { showToast("Team members require Pro plan. Upgrade to invite teammates!", "error"); return; }
+    if ((userMeta?.plan || "free") !== "pro") { showUpgradeModal("site_limit"); return; }
     const btn = document.getElementById("btn-invite");
     btn.disabled = true; btn.textContent = "Inviting...";
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/teams`, {
-        method: "POST",
-        headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({ owner_id: currentUser?.id, member_email: email, status: "pending" })
-      });
-      if (res.ok || res.status === 201) {
-        showToast(`✅ Invite sent to ${email}!`);
-        document.getElementById("invite-email").value = "";
-        loadTeam();
-      } else { showToast("Error sending invite", "error"); }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/teams`, { method: "POST", headers: { ...headers, "Prefer": "return=minimal" }, body: JSON.stringify({ owner_id: currentUser?.id, member_email: email, status: "pending" }) });
+      if (res.ok || res.status === 201) { showToast("✅ Invite sent to " + email + "!"); document.getElementById("invite-email").value = ""; loadTeam(); }
+      else showToast("Error sending invite", "error");
     } catch(e) { showToast("Network error", "error"); }
     btn.disabled = false; btn.textContent = "Send Invite";
   }
 
   async function removeMember(id, email) {
-    if (!confirm(`Remove ${email} from team?`)) return;
+    if (!confirm("Remove " + email + " from team?")) return;
     const res = await fetch(`${SUPABASE_URL}/rest/v1/teams?id=eq.${id}`, { method: "DELETE", headers });
-    if (res.ok) { showToast(`Removed ${email}`); loadTeam(); }
+    if (res.ok) { showToast("Removed " + email); loadTeam(); }
     else showToast("Failed to remove", "error");
   }
 
   document.getElementById("btn-invite").addEventListener("click", inviteMember);
 
-  // Account
+  // ── ACCOUNT ──
   async function loadAccount() {
     const plan = userMeta?.plan || "free";
     document.getElementById("btn-free").disabled = plan === "free";
     document.getElementById("btn-upgrade").style.display = plan === "pro" ? "none" : "block";
-    document.getElementById("account-info").innerHTML = `
-      <div>👤 Name: <strong>${currentUser?.name}</strong></div>
-      <div>📧 Email: <strong>${currentUser?.email}</strong></div>
-      <div>📋 Plan: <strong>${plan.toUpperCase()}</strong></div>
-      <div>🕒 Member since: <strong>${new Date().toLocaleDateString()}</strong></div>
-    `;
+    document.getElementById("account-info").innerHTML =
+      "<div>👤 Name: <strong>" + currentUser?.name + "</strong></div>" +
+      "<div>📧 Email: <strong>" + currentUser?.email + "</strong></div>" +
+      "<div>📋 Plan: <strong>" + plan.toUpperCase() + "</strong></div>";
     const sitesRes = await fetch(`${SUPABASE_URL}/rest/v1/sites?user_id=eq.${currentUser?.id}&active=eq.true`, { headers });
     const sites = await sitesRes.json();
     const count = Array.isArray(sites) ? sites.length : 0;
-    const limit = plan === "pro" ? "∞" : (userMeta?.sites_limit || 3);
-    const pct = plan === "pro" ? 0 : Math.min((count / (userMeta?.sites_limit || 3)) * 100, 100);
+    const limit = plan === "pro" ? "∞" : (userMeta?.sites_limit || FREE_SITE_LIMIT);
+    const pct = plan === "pro" ? 0 : Math.min((count / (userMeta?.sites_limit || FREE_SITE_LIMIT)) * 100, 100);
     const fillClass = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "";
-    document.getElementById("usage-info").innerHTML = `
-      <div style="font-size:13px;color:#888;margin-bottom:8px;">Sites: <strong style="color:#fff;">${count} / ${limit}</strong></div>
-      ${plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div>` : '<div style="font-size:12px;color:#4ade80;">✅ Unlimited sites on Pro</div>'}
-    `;
+    document.getElementById("usage-info").innerHTML =
+      `<div style="font-size:13px;color:#888;margin-bottom:8px;">Sites: <strong style="color:#fff;">${count} / ${limit}</strong></div>` +
+      (plan !== "pro" ? `<div class="limit-bar"><div class="limit-fill ${fillClass}" style="width:${pct}%"></div></div><div style="font-size:12px;color:#888;margin-top:10px;">⏱ Free session: 10 minutes per login</div>` : '<div style="font-size:12px;color:#4ade80;">✅ Unlimited sites · No time limits</div>');
   }
 
+  // ── UPGRADE ──
   async function upgradePlan() {
-    if (!confirm("Upgrade to Pro plan for $9/month? (This is a demo — no payment will be charged)")) return;
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser?.id}`, {
-        method: "PATCH",
-        headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({ plan: "pro", sites_limit: 999 })
-      });
-      userMeta = { ...userMeta, plan: "pro", sites_limit: 999 };
-      updateHeader();
-      showToast("🎉 Upgraded to Pro!");
-      loadAccount();
-    } catch(e) { showToast("Upgrade failed", "error"); }
+    if ((userMeta?.plan || "free") === "pro") { showToast("You are already on Pro!"); return; }
+    const btn = document.getElementById("btn-upgrade");
+    if (btn) { btn.disabled = true; btn.textContent = "Opening payment..."; }
+    const options = {
+      key: "rzp_live_ShcQEcxbS8ALPA",
+      amount: 74900, currency: "INR",
+      name: "AI CTO", description: "Pro Plan - Monthly",
+      prefill: { name: currentUser?.name || "", email: currentUser?.email || "" },
+      theme: { color: "#4ade80" },
+      modal: { ondismiss: function() { if (btn) { btn.disabled = false; btn.textContent = "Upgrade to Pro"; } } },
+      handler: async function() {
+        await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser.id}`, { method: "PATCH", headers: { ...headers, "Prefer": "return=minimal" }, body: JSON.stringify({ plan: "pro", sites_limit: 999 }) });
+        userMeta = { ...userMeta, plan: "pro", sites_limit: 999 };
+        updateHeader();
+        resetTimerOnUpgrade();
+        showToast("🎉 Welcome to Pro!");
+        loadAccount();
+      }
+    };
+    const rzp = new Razorpay(options);
+    rzp.on("payment.failed", function(r) { showToast("Payment failed: " + r.error.description, "error"); if (btn) { btn.disabled = false; btn.textContent = "Upgrade to Pro"; } });
+    rzp.open();
   }
 
-  // Logs
+  // ── LOGS ──
   async function loadUptimeLogs() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/uptime_logs?order=checked_at.desc&limit=20`, { headers });
     const logs = await res.json();
     const el = document.getElementById("uptime-table");
     if (!Array.isArray(logs) || !logs.length) { el.innerHTML = '<div class="loading">No logs yet.</div>'; return; }
-    el.innerHTML = `<table>
-      <tr><th>Site</th><th>Status</th><th>Response</th><th>Time</th></tr>
-      ${logs.map(l => `<tr>
-        <td>${l.site_url}</td>
-        <td><span class="badge ${l.status}">${l.status.toUpperCase()}</span></td>
-        <td>${l.response_time ? l.response_time + "ms" : "—"}</td>
-        <td>${new Date(l.checked_at).toLocaleString()}</td>
-      </tr>`).join("")}
-    </table>`;
+    el.innerHTML = `<table><tr><th>Site</th><th>Status</th><th>Response</th><th>Time</th></tr>${logs.map(l => `<tr><td>${l.site_url}</td><td><span class="badge ${l.status}">${l.status.toUpperCase()}</span></td><td>${l.response_time ? l.response_time+"ms" : "—"}</td><td>${new Date(l.checked_at).toLocaleString()}</td></tr>`).join("")}</table>`;
   }
 
   async function loadFixLogs() {
@@ -595,19 +667,10 @@
     const logs = await res.json();
     const el = document.getElementById("fix-table");
     if (!Array.isArray(logs) || !logs.length) { el.innerHTML = '<div class="loading">No fixes yet.</div>'; return; }
-    el.innerHTML = `<table>
-      <tr><th>Site</th><th>Error</th><th>Fix</th><th>Deployed</th><th>Time</th></tr>
-      ${logs.map(l => `<tr>
-        <td>${l.site_url}</td>
-        <td style="color:#f87171;">${l.error || "—"}</td>
-        <td style="color:#4ade80;">${l.fix || "—"}</td>
-        <td>${l.deployed ? "✅" : "⏳"}</td>
-        <td>${new Date(l.created_at).toLocaleString()}</td>
-      </tr>`).join("")}
-    </table>`;
+    el.innerHTML = `<table><tr><th>Site</th><th>Error</th><th>Fix</th><th>Deployed</th><th>Time</th></tr>${logs.map(l => `<tr><td>${l.site_url}</td><td style="color:#f87171;">${l.error||"—"}</td><td style="color:#4ade80;">${l.fix||"—"}</td><td>${l.deployed?"✅":"⏳"}</td><td>${new Date(l.created_at).toLocaleString()}</td></tr>`).join("")}</table>`;
   }
 
-  // Chart
+  // ── CHART ──
   let chartInstance = null;
   async function loadChart() {
     try {
@@ -620,22 +683,13 @@
       if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
         type: "line",
-        data: {
-          labels: filtered.map(l => new Date(l.checked_at).toLocaleTimeString()),
-          datasets: [{ label: "Response Time (ms)", data: filtered.map(l => l.response_time), borderColor: "#4ade80", backgroundColor: "rgba(74,222,128,0.1)", tension: 0.4, fill: true, pointRadius: 3 }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { labels: { color: "#fff" } } },
-          scales: {
-            x: { ticks: { color: "#888", maxTicksLimit: 8 }, grid: { color: "#2a2a2a" } },
-            y: { ticks: { color: "#888" }, grid: { color: "#2a2a2a" }, beginAtZero: true }
-          }
-        }
+        data: { labels: filtered.map(l => new Date(l.checked_at).toLocaleTimeString()), datasets: [{ label: "Response Time (ms)", data: filtered.map(l => l.response_time), borderColor: "#4ade80", backgroundColor: "rgba(74,222,128,0.1)", tension: 0.4, fill: true, pointRadius: 3 }] },
+        options: { responsive: true, plugins: { legend: { labels: { color: "#fff" } } }, scales: { x: { ticks: { color: "#888", maxTicksLimit: 8 }, grid: { color: "#2a2a2a" } }, y: { ticks: { color: "#888" }, grid: { color: "#2a2a2a" }, beginAtZero: true } } }
       });
     } catch(e) {}
   }
 
+  // ── MAIN ──
   async function loadAll() {
     document.getElementById("last-updated").textContent = "Refreshing...";
     await Promise.all([loadOverview(), loadChart()]);
@@ -648,8 +702,9 @@
     window.location.href = "auth.html";
   });
 
-  loadBranding();
-  initUser().then(ok => { if (ok) { loadAll(); setInterval(loadAll, 30000); } });
+  initUser().then(ok => {
+    if (ok) { loadAll(); setInterval(loadAll, 30000); }
+  });
 </script>
 </body>
 </html>
