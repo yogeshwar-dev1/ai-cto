@@ -1,11 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI CTO Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; padding: 24px; }
@@ -560,30 +559,7 @@
   }
 
   async function upgradePlan() {
-    if ((userMeta?.plan || "free") === "pro") { showToast("You are already on Pro!"); return; }
-    const btn = document.getElementById("btn-upgrade");
-    btn.disabled = true; btn.textContent = "Opening payment...";
-    const options = {
-      key: "rzp_live_ShcQEcxbS8ALPA",
-      amount: 74900,
-      currency: "INR",
-      name: "AI CTO",
-      description: "Pro Plan - Monthly",
-      prefill: { name: currentUser?.name || "", email: currentUser?.email || "" },
-      theme: { color: "#4ade80" },
-      modal: { ondismiss: function() { btn.disabled = false; btn.textContent = "Upgrade to Pro"; } },
-      handler: async function(response) {
-        await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser.id}`, { method: "PATCH", headers: { ...headers, "Prefer": "return=minimal" }, body: JSON.stringify({ plan: "pro", sites_limit: 999 }) });
-        userMeta = { ...userMeta, plan: "pro", sites_limit: 999 };
-        updateHeader(); showToast("Payment successful! Welcome to Pro!"); loadAccount();
-        btn.textContent = "You are on Pro!"; btn.disabled = true;
-      }
-    };
-    const rzp = new Razorpay(options);
-    rzp.on("payment.failed", function(r) { showToast("Payment failed: " + r.error.description, "error"); btn.disabled = false; btn.textContent = "Upgrade to Pro"; });
-    rzp.open();
-    return;
-    // OLD CODE BELOW (unreachable)
+    if (!confirm("Upgrade to Pro plan for $9/month? (This is a demo — no payment will be charged)")) return;
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/users_meta?id=eq.${currentUser?.id}`, {
         method: "PATCH",
@@ -677,5 +653,3 @@
 </script>
 </body>
 </html>
-
-
